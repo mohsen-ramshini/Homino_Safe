@@ -1,0 +1,17 @@
+# Ignore all components
+components/
+artifacts/
+app/
+pages/
+lib/
+hooks/
+
+# Ignore specific file types
+*.tsx
+*.ts
+*.js
+*.jsx
+
+# Keep config files linted (optional)
+!*.config.js
+!*.config.ts
