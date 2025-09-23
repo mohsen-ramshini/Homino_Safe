@@ -59,6 +59,7 @@ const suggestedActions = [
           className={index > 1 ? 'hidden sm:block' : 'block'}
         >
           <Button
+             type='button'
             variant="ghost"
             onClick={async () => {
               window.history.replaceState({}, '', `/dashboard/ai/chat/${chatId}`);
