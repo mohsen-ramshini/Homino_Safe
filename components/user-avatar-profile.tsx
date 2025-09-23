@@ -10,7 +10,7 @@ interface UserAvatarProfileProps {
     last_name: string;
     phone_number: string;
     id: number;
-    role: "admin" | "patient" | "caregiver";
+    role: "admin" | "patient" | "caregiver" | "doctor";
     status: "active" | "inactive";
   } | null;
 }

@@ -16,7 +16,6 @@ type User = {
 } | null;
 
 interface UserContextType {
-  role: string;
   user: User;
   setUser: (user: User) => void;
 }
