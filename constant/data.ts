@@ -15,23 +15,11 @@ export const roleNavItems: Record<Role, NavItem[]> = {
     },
     {
       title: 'AI',
-      url: '#',
+      url: '/dashboard/ai',
       icon: 'brain',
-      isActive: true,
-      items: [
-        {
-          title: 'Predictive AI',
-          url: '/',
-          icon: 'brain',
-          shortcut: ['m', 'm'],
-        },
-        {
-          title: 'chat',
-          url: '/dashboard/ai',
-          icon: 'chat',
-          shortcut: ['l', 'l'],
-        },
-      ],
+      shortcut: ['a', 'l'],
+      isActive: false,
+      items: [],
     },
     {
       title: 'Alerts',

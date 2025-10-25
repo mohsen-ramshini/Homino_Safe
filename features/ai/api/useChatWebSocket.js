@@ -41,7 +41,6 @@ function createMessage(role, content, timestamp) {
 export function useChatWebSocket(sessionId) {
   const ws = useRef(null);
   const host = "192.168.100.87:8888";
-  // const host = "130.185.120.67:8888";
 
   const [messages, setMessages] = useState([]);
   const [status, setStatus] = useState("connecting");
@@ -94,11 +93,27 @@ export function useChatWebSocket(sessionId) {
         parsed = event.data;
       }
 
-      // بررسی نوع پیام
+      // پیام تایپینگ
+      if (parsed.type === "typing") {
+        setMessages((prev) => {
+          if (prev.length && prev[prev.length - 1].type === "typing") return prev;
+          return [
+            ...prev,
+            {
+              id: uuidv4(),
+              type: "typing",
+              parts: [{ type: "text", text: "" }],
+              content: "",
+              timestamp: new Date().toISOString(),
+            },
+          ];
+        });
+        return; // ادامه پردازش پیام عادی را متوقف کن
+      }
+
+      // پیام‌های معمولی یا تاریخچه
       if (parsed.type === "history" && parsed.messages) {
-        // پردازش تاریخچه
         const historyMessages = parsed.messages.map((msg) => {
-          // استخراج محتوای متنی از پیام‌های کاربر
           let content = msg.content;
           if (msg.role === "user" && typeof msg.content === "string") {
             try {
@@ -106,9 +121,7 @@ export function useChatWebSocket(sessionId) {
               if (userParsed.parts?.[0]?.text) {
                 content = userParsed.parts[0].text;
               }
-            } catch (e) {
-              // اگر parse نشد، همان content را استفاده کن
-            }
+            } catch (e) {}
           }
 
           return {
@@ -120,15 +133,10 @@ export function useChatWebSocket(sessionId) {
           };
         });
 
-        // مرتب‌سازی پیام‌ها بر اساس timestamp
-        historyMessages.sort((a, b) => 
-          new Date(a.timestamp) - new Date(b.timestamp)
-        );
-
+        historyMessages.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
         setMessages(historyMessages);
         setIsHistoryLoaded(true);
       } else {
-        // پیام‌های معمولی
         const contentText = extractContentText(parsed);
         const role = parsed.role || "assistant";
 
@@ -140,7 +148,8 @@ export function useChatWebSocket(sessionId) {
           timestamp: new Date().toISOString(),
         };
 
-        setMessages((prev) => [...prev, newMessage]);
+        // حذف پیام تایپینگ قبل از افزودن پیام واقعی
+        setMessages((prev) => [...prev.filter((msg) => msg.type !== "typing"), newMessage]);
       }
     };
 

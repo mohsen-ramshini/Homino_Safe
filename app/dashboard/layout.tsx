@@ -3,7 +3,7 @@ import Header from '@/components/layout/header';
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
 import type { Metadata } from 'next';
 import { cookies } from 'next/headers';
-import { AssistantModal } from '@/components/ui/assistant-ui/assistant-modal';
+import  AssistantModal  from '@/components/ui/assistant-ui/assistant-modal';
 import { LayoutSidebarProvider } from '@/context/SidebarContext';
 
 

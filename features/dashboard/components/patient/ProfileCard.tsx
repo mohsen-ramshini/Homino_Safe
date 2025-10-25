@@ -22,11 +22,17 @@ export default function ProfileCard() {
     );
   }
 
+  const physicalInfo = [
+    { label: 'Weight', value: '68 kg' },
+    { label: 'Height', value: '167 cm' },
+    { label: 'Age', value: '48' },
+  ];
+
   return (
     <div className="bg-white dark:bg-zinc-800 rounded-xl p-5 transition-colors duration-300">
       {/* بخش بالا: آواتار + نام */}
       <div className="flex flex-col sm:flex-row items-center sm:items-start gap-5">
-        {/* آواتار و دکمه زیر گوشه سمت راست آن */}
+        {/* آواتار و دکمه ویرایش */}
         <div className="relative flex flex-col items-center">
           <Avatar className="h-24 w-24 shrink-0 border-2 border-gray-200 dark:border-zinc-600 shadow-lg">
             <AvatarImage src="/placeholder-user.png" alt={user.first_name} />
@@ -36,7 +42,6 @@ export default function ProfileCard() {
             </AvatarFallback>
           </Avatar>
 
-          {/* دکمه ویرایش زیر گوشه سمت راست آواتار، همیشه نمایش داده می‌شود */}
           <div className="absolute bottom-0 right-0 translate-x-1/4 translate-y-1/4">
             <Link href="/dashboard/profile">
               <Button
@@ -59,21 +64,32 @@ export default function ProfileCard() {
         </div>
       </div>
 
-      {/* اطلاعات فیزیکی کاربر: وزن، قد، سن */}
-      <CardContent className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-6 px-0 text-center">
-        {[
-          { label: 'Weight', value: '68 kg' },
-          { label: 'Height', value: '167 cm' },
-          { label: 'Age', value: '48' },
-        ].map((item) => (
-          <Card
-            key={item.label}
-            className="bg-muted dark:bg-zinc-700 p-4 rounded-xl shadow-sm"
-          >
-            <p className="text-sm text-muted-foreground">{item.label}</p>
-            <p className="text-lg font-semibold">{item.value}</p>
-          </Card>
-        ))}
+      {/* اطلاعات فیزیکی کاربر */}
+      <CardContent className="mt-6 px-0">
+        {/* حالت دسکتاپ: سه کارت جدا */}
+        <div className="hidden sm:grid grid-cols-3 gap-4 text-center">
+          {physicalInfo.map((item) => (
+            <Card
+              key={item.label}
+              className="bg-muted dark:bg-zinc-700 p-4 rounded-xl shadow-sm"
+            >
+              <p className="text-sm text-muted-foreground">{item.label}</p>
+              <p className="text-lg font-semibold">{item.value}</p>
+            </Card>
+          ))}
+        </div>
+
+        {/* حالت موبایل: یک کارت با اطلاعات در یک خط */}
+        <div className="grid sm:hidden bg-muted dark:bg-zinc-700 p-4 rounded-xl shadow-sm">
+          <div className="flex justify-between text-center">
+            {physicalInfo.map((item) => (
+              <div key={item.label} className="flex flex-col flex-1">
+                <p className="text-sm text-muted-foreground">{item.label}</p>
+                <p className="text-lg font-semibold">{item.value}</p>
+              </div>
+            ))}
+          </div>
+        </div>
       </CardContent>
     </div>
   );
