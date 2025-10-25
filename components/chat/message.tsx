@@ -12,7 +12,7 @@ import { cn, sanitizeText } from '@/lib/utils';
 import { Button } from '../ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip';
 import type { UseChatHelpers } from '@ai-sdk/react';
-import type { ChatMessage as OriginalChatMessage } from '@/lib/types';
+import type { ChatMessages as OriginalChatMessage } from '@/lib/types';
 
 type MessagePart = {
   type: string;
