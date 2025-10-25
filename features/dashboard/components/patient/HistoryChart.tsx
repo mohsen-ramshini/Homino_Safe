@@ -138,7 +138,7 @@ export function HistoryChart({ data, metric, unit, className = "" }: HistoryChar
   };
 
   return (
-    <div className={`rounded-xl shadow p-4 transition-colors duration-300 bg-white dark:bg-zinc-800 ${className}`}>
+    <div className={`rounded-xl p-4 transition-colors duration-300 bg-white dark:bg-zinc-800 ${className}`}>
       <h2 className="text-lg font-semibold mb-4 capitalize">
         {metric.replace("_", " ")} over time
       </h2>

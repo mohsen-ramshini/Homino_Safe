@@ -27,7 +27,7 @@ export function OverviewSection({ data }: { data: any }) {
   const { wearable, environmental } = data;
 
   return (
-    <div className="bg-white dark:bg-zinc-800 rounded-xl shadow p-4 transition-colors duration-300">
+    <div className="bg-white dark:bg-zinc-800 rounded-xl p-4 transition-colors duration-300">
       <div className="w-full h-full flex flex-col gap-4">
         <Tabs defaultValue="vitals" className="w-full">
           <TabsList className="grid grid-cols-2 w-full bg-gray-100 dark:bg-zinc-700 p-1 rounded-xl transition-colors duration-300">

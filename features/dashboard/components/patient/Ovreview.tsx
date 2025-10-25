@@ -15,6 +15,8 @@ import { Card } from "@/components/ui/card";
 
 const AUTO_ROTATE_DELAY = 60000; // 1 دقیقه برای توقف خودکار
 
+type TabType = "overview" | "recommendation" | "risk";
+
 export default function Ovreview() {
   const { user } = useUser();
   const userId = user?.id ?? 0;
@@ -22,23 +24,21 @@ export default function Ovreview() {
   const { data: recommendationData } = useRecommendation(userId);
   const { data: summaryData } = useSummary(userId);
 
-  const [activeTab, setActiveTab] = useState<string>("overview");
+  const [activeTab, setActiveTab] = useState<TabType>("overview");
   const [summaryTab, setSummaryTab] = useState<SectionType>("kpis");
 
   const [isFading, setIsFading] = useState(false);
-  const [pendingTab, setPendingTab] = useState<string | null>(null);
+  const [pendingTab, setPendingTab] = useState<TabType | null>(null);
   const [lastInteractionTime, setLastInteractionTime] = useState(Date.now());
 
-  // تعامل کاربر (با آپدیت زمان)
-  const handleTabChange = (tab: string) => {
+  const handleTabChange = (tab: TabType) => {
     if (tab === activeTab) return;
-    setLastInteractionTime(Date.now()); // فقط وقتی کاربر کلیک کنه
+    setLastInteractionTime(Date.now());
     setIsFading(true);
     setPendingTab(tab);
   };
 
-  // حالت چرخش خودکار (بدون آپدیت زمان تعامل)
-  const autoRotateTab = (tab: string) => {
+  const autoRotateTab = (tab: TabType) => {
     if (tab === activeTab) return;
     setIsFading(true);
     setPendingTab(tab);
@@ -62,20 +62,19 @@ export default function Ovreview() {
   }, [isFading, pendingTab]);
 
   useEffect(() => {
-    const tabs = ["overview", "recommendation", "risk"];
+    const tabs: TabType[] = ["overview", "recommendation", "risk"];
     let index = tabs.indexOf(activeTab);
 
     const interval = setInterval(() => {
       const now = Date.now();
       const timeSinceLastInteraction = now - lastInteractionTime;
 
-      // اگر کاربر اخیراً تعامل داشته، چرخش نکن
       if (timeSinceLastInteraction < AUTO_ROTATE_DELAY) return;
 
       const nextIndex = (index + 1) % tabs.length;
       autoRotateTab(tabs[nextIndex]);
       index = nextIndex;
-    }, 3500); // چرخش هر ۳.۵ ثانیه
+    }, 3500);
 
     return () => clearInterval(interval);
   }, [activeTab, lastInteractionTime]);
@@ -123,54 +122,37 @@ export default function Ovreview() {
   };
 
   return (
-    <div className="bg-white dark:bg-zinc-800 rounded-xl shadow p-4 transition-colors duration-300">
+    <div className="bg-white dark:bg-zinc-800 rounded-xl p-4 transition-colors duration-300">
       <Tabs
         value={activeTab}
-        onValueChange={handleTabChange}
+        onValueChange={(val) => handleTabChange(val as TabType)}
         className="w-full h-full space-y-4"
       >
         <TabsList
           className="w-full overflow-x-auto sm:overflow-visible flex sm:grid sm:grid-cols-3 gap-2 sm:gap-0 bg-gray-100 dark:bg-zinc-700 p-1 rounded-xl transition-colors duration-300 border-none"
         >
-          <TabsTrigger
-            value="overview"
-            className={`min-w-max text-sm sm:text-base py-1 sm:py-0 px-3 sm:px-4 rounded-xl transition-colors duration-300
-              data-[state=active]:bg-blue-600 data-[state=active]:text-white
-              dark:data-[state=active]:bg-blue-400 dark:data-[state=active]:text-zinc-900
-              text-gray-700 dark:text-gray-200
-              data-[state=inactive]:bg-transparent
-              data-[state=inactive]:text-gray-700
-              dark:data-[state=inactive]:text-gray-200
-            `}
-          >
-            Daily Overview
-          </TabsTrigger>
-          <TabsTrigger
-            value="recommendation"
-            className={`min-w-max text-sm sm:text-base py-1 sm:py-0 px-3 sm:px-4 rounded-xl transition-colors duration-300
-              data-[state=active]:bg-blue-600 data-[state=active]:text-white
-              dark:data-[state=active]:bg-blue-400 dark:data-[state=active]:text-zinc-900
-              text-gray-700 dark:text-gray-200
-              data-[state=inactive]:bg-transparent
-              data-[state=inactive]:text-gray-700
-              dark:data-[state=inactive]:text-gray-200
-            `}
-          >
-            Recommendation
-          </TabsTrigger>
-          <TabsTrigger
-            value="risk"
-            className={`min-w-max text-sm sm:text-base py-1 sm:py-0 px-3 sm:px-4 rounded-xl transition-colors duration-300
-              data-[state=active]:bg-blue-600 data-[state=active]:text-white
-              dark:data-[state=active]:bg-blue-400 dark:data-[state=active]:text-zinc-900
-              text-gray-700 dark:text-gray-200
-              data-[state=inactive]:bg-transparent
-              data-[state=inactive]:text-gray-700
-              dark:data-[state=inactive]:text-gray-200
-            `}
-          >
-            Risk
-          </TabsTrigger>
+          {(["overview", "recommendation", "risk"] as TabType[]).map((tab) => {
+            let label = "";
+            if (tab === "overview") label = "Daily Overview";
+            if (tab === "recommendation") label = "Recommendation";
+            if (tab === "risk") label = "Risk";
+            return (
+              <TabsTrigger
+                key={tab}
+                value={tab}
+                className={`min-w-max text-sm sm:text-base py-1 sm:py-0 px-3 sm:px-4 rounded-xl transition-colors duration-300
+                  data-[state=active]:bg-blue-600 data-[state=active]:text-white
+                  dark:data-[state=active]:bg-blue-400 dark:data-[state=active]:text-zinc-900
+                  text-gray-700 dark:text-gray-200
+                  data-[state=inactive]:bg-transparent
+                  data-[state=inactive]:text-gray-700
+                  dark:data-[state=inactive]:text-gray-200
+                `}
+              >
+                {label}
+              </TabsTrigger>
+            );
+          })}
         </TabsList>
 
         <div
@@ -183,4 +165,4 @@ export default function Ovreview() {
       </Tabs>
     </div>
   );
-};
+}

@@ -35,7 +35,7 @@ export const RecommendSection: FC<{
     colorMap[data.alert_level_value as keyof typeof colorMap] || "";
 
   return (
-    <div className="bg-white dark:bg-zinc-800 rounded-xl shadow p-4 transition-colors duration-300">
+    <div className="bg-white dark:bg-zinc-800 rounded-xl  p-4 transition-colors duration-300">
       <div className="space-y-5">
         {/* System Suggestions */}
         {activeSection === "alerts" && (
