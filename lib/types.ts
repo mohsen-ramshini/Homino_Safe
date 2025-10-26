@@ -51,6 +51,7 @@ export type MessageItem = {
 };
 
 export type ChatMessage = {
+  type: string;
   role: string;
   id: string | null | undefined;
   messages: MessageItem[]; // ✅ آرایه با هر تعداد پیام

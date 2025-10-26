@@ -10,7 +10,6 @@ import type { ChatMessage } from '@/lib/types';
 interface ArtifactMessagesProps {
   chatId: string;
   status: UseChatHelpers<ChatMessage>['status'];
-
   messages: ChatMessage[];
   setMessages: UseChatHelpers<ChatMessage>['setMessages'];
   regenerate: UseChatHelpers<ChatMessage>['reload'];

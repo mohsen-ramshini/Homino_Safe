@@ -6,14 +6,14 @@ import equal from 'fast-deep-equal';
 import type { UseChatHelpers } from '@ai-sdk/react';
 import { motion } from 'framer-motion';
 import { useMessages } from '@/hooks/chat/use-messages';
-import type { ChatMessages } from '@/lib/types';
+import type { ChatMessage } from '@/lib/types';
 import { useDataStream } from './data-stream-provider';
 
 interface MessagesProps {
   chatId: string;
-  status: UseChatHelpers<ChatMessages>['status'];
-  messages: ChatMessages[];
-  setMessages: UseChatHelpers<ChatMessages>['setMessages'];
+  status: UseChatHelpers<ChatMessage>['status'];
+  messages: ChatMessage[];
+  setMessages: UseChatHelpers<ChatMessage>['setMessages'];
   isReadonly: boolean;
   isArtifactVisible: boolean;
 }

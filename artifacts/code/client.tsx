@@ -257,6 +257,7 @@ sendMessage({
   ],
   id: null,
   session_id: 'some-session',
+  type: ''
 });
 
       },
@@ -276,6 +277,7 @@ sendMessage({
         ],
         id: null,
         session_id: 'some-session',
+        type: ''
       });
       },
     },

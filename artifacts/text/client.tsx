@@ -149,17 +149,18 @@ export const textArtifact = new Artifact<'text', TextArtifactMetadata>({
       description: 'Add final polish',
       onClick: ({ sendMessage }) => {
  sendMessage({
-  role: 'user',
-  messages: [
-    {
-      role: 'user',
-      content: 'Add comments to the code snippet for understanding',
-      timestamp: new Date().toISOString(),
-    },
-  ],
-  id: null,
-  session_id: 'some-session',
-});
+   role: 'user',
+   messages: [
+     {
+       role: 'user',
+       content: 'Add comments to the code snippet for understanding',
+       timestamp: new Date().toISOString(),
+     },
+   ],
+   id: null,
+   session_id: 'some-session',
+   type: ''
+ });
 
       },
     },
@@ -178,6 +179,7 @@ sendMessage({
   ],
   id: null,
   session_id: 'some-session',
+  type: ''
 });
 
       },

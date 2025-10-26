@@ -5,6 +5,7 @@ import remarkGfm from 'remark-gfm';
 import { CodeBlock } from './code-block';
 
 const components: Partial<Components> = {
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-expect-error
   code: CodeBlock,
   pre: ({ children }) => <>{children}</>,
@@ -38,6 +39,7 @@ const components: Partial<Components> = {
   },
   a: ({ node, children, ...props }) => {
     return (
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-expect-error
       <Link
         className="text-blue-500 hover:underline"

@@ -1,7 +1,7 @@
 "use client";
 
 import { Suspense } from "react";
-import { AssistantModal } from "@/components/ui/assistant-ui/assistant-modal";
+import  AssistantModal  from "@/components/ui/assistant-ui/assistant-modal";
 
 function Home() {
   return (
