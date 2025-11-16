@@ -44,6 +44,13 @@ export const roleNavItems: Record<Role, NavItem[]> = {
       isActive: true,
       items: [],
     },
+    {
+      title: 'Chat',
+      url: '/dashboard/chat',
+      icon: 'chat',
+      isActive: true,
+      items: [],
+    },
   ],
   caregiver: [
     {
@@ -52,6 +59,13 @@ export const roleNavItems: Record<Role, NavItem[]> = {
       icon: 'users',
       shortcut: ['p', 't'],
       isActive: false,
+      items: [],
+    },
+    {
+      title: 'Chat',
+      url: '/dashboard/chat',
+      icon: 'chat',
+      isActive: true,
       items: [],
     },
   ],
@@ -64,6 +78,13 @@ export const roleNavItems: Record<Role, NavItem[]> = {
       isActive: false,
       items: [],
     },
+    {
+      title: 'Chat',
+      url: '/dashboard/chat',
+      icon: 'chat',
+      isActive: true,
+      items: [],
+    },
   ],
   admin: [
     {
@@ -72,6 +93,13 @@ export const roleNavItems: Record<Role, NavItem[]> = {
       icon: 'dashboard',
       shortcut: ['d', 'd'],
       isActive: false,
+      items: [],
+    },
+    {
+      title: 'Chat',
+      url: '/dashboard/chat',
+      icon: 'chat',
+      isActive: true,
       items: [],
     },
   ],
