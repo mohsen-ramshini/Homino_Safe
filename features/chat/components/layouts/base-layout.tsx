@@ -1,15 +1,15 @@
-import { Outlet } from "react-router-dom";
+import React from "react";
 
-const BaseLayout = () => {
+interface BaseLayoutProps {
+  children: React.ReactNode;
+}
+
+const BaseLayout: React.FC<BaseLayoutProps> = ({ children }) => {
   return (
     <div className="flex flex-col w-full h-auto">
-      <div
-        className="w-full h-full flex items-center
-      justify-center
-    "
-      >
+      <div className="flex w-full h-full items-center justify-center">
         <div className="w-full mx-auto h-auto">
-          <Outlet />
+          {children}
         </div>
       </div>
     </div>

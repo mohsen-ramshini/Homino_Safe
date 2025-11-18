@@ -1,11 +1,15 @@
-import AppWrapper from "@/components/app-wrapper";
-import ChatList from "@/components/chat/chat-list";
-import useChatId from "@/hooks/use-chat-id";
+import AppWrapper from "@/components/realtime-chat/app-wrapper";
+import ChatList from "@/components/realtime-chat/chat/chat-list";
+import useChatId from "@/hooks/realtime-chat/use-chat-id";
 import { cn } from "@/lib/utils";
-import { Outlet } from "react-router-dom";
 
-const AppLayout = () => {
+interface AppLayoutProps {
+  children: React.ReactNode;
+}
+
+const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
   const chatId = useChatId();
+
   return (
     <AppWrapper>
       <div className="h-full">
@@ -19,7 +23,7 @@ const AppLayout = () => {
             !chatId ? "hidden lg:block" : "block"
           )}
         >
-          <Outlet />
+          {children}
         </div>
       </div>
     </AppWrapper>

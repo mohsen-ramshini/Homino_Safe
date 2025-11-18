@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { create } from "zustand";
 import type { UserType } from "@/features/chat/types/auth.type";
 import type {
@@ -7,7 +6,7 @@ import type {
   CreateMessageType,
   MessageType,
 } from "@/features/chat/types/chat.type";
-import { API } from "@/lib/realtime-chat/axios-client";
+import API from "@/lib/realtime-chat/axios-client";
 import { toast } from "sonner";
 import { useAuth } from "./use-auth";
 import { generateUUID } from "@/lib/realtime-chat/helper";
@@ -28,11 +27,11 @@ interface ChatState {
   isSingleChatLoading: boolean;
   isSendingMsg: boolean;
 
-  fetchAllUsers: () => void;
-  fetchChats: () => void;
+  fetchAllUsers: () => Promise<void>;
+  fetchChats: () => Promise<void>;
   createChat: (payload: CreateChatType) => Promise<ChatType | null>;
-  fetchSingleChat: (chatId: string) => void;
-  sendMessage: (payload: CreateMessageType) => void;
+  fetchSingleChat: (chatId: string) => Promise<void>;
+  sendMessage: (payload: CreateMessageType) => Promise<void>;
 
   addNewChat: (newChat: ChatType) => void;
   updateChatLastMessage: (chatId: string, lastMessage: MessageType) => void;
@@ -55,10 +54,10 @@ export const useChat = create<ChatState>()((set, get) => ({
   fetchAllUsers: async () => {
     set({ isUsersLoading: true });
     try {
-      const { data } = await API.get("/user/all");
+      const { data } = await API.get<{ users: UserType[] }>("/user/all");
       set({ users: data.users });
-    } catch (error: any) {
-      toast.error(error?.response?.data?.message || "Failed to fetch users");
+    } catch (error: unknown) {
+      toast.error("Failed to fetch users");
     } finally {
       set({ isUsersLoading: false });
     }
@@ -67,10 +66,10 @@ export const useChat = create<ChatState>()((set, get) => ({
   fetchChats: async () => {
     set({ isChatsLoading: true });
     try {
-      const { data } = await API.get("/chat/all");
+      const { data } = await API.get<{ chats: ChatType[] }>("/chat/all");
       set({ chats: data.chats });
-    } catch (error: any) {
-      toast.error(error?.response?.data?.message || "Failed to fetch chats");
+    } catch (error: unknown) {
+      toast.error("Failed to fetch chats");
     } finally {
       set({ isChatsLoading: false });
     }
@@ -79,14 +78,11 @@ export const useChat = create<ChatState>()((set, get) => ({
   createChat: async (payload: CreateChatType) => {
     set({ isCreatingChat: true });
     try {
-      const response = await API.post("/chat/create", {
-        ...payload,
-      });
+      const response = await API.post<{ chat: ChatType }>("/chat/create", payload);
       get().addNewChat(response.data.chat);
-      toast.success("Chat created successfully");
       return response.data.chat;
-    } catch (error: any) {
-      toast.error(error?.response?.data?.message || "Failed to fetch chats");
+    } catch (error: unknown) {
+      toast.error("Failed to create chat");
       return null;
     } finally {
       set({ isCreatingChat: false });
@@ -96,10 +92,10 @@ export const useChat = create<ChatState>()((set, get) => ({
   fetchSingleChat: async (chatId: string) => {
     set({ isSingleChatLoading: true });
     try {
-      const { data } = await API.get(`/chat/${chatId}`);
+      const { data } = await API.get<{ chat: ChatType; messages: MessageType[] }>(`/chat/${chatId}`);
       set({ singleChat: data });
-    } catch (error: any) {
-      toast.error(error?.response?.data?.message || "Failed to fetch chats");
+    } catch (error: unknown) {
+      toast.error("Failed to fetch chat");
     } finally {
       set({ isSingleChatLoading: false });
     }
@@ -107,31 +103,44 @@ export const useChat = create<ChatState>()((set, get) => ({
 
   sendMessage: async (payload: CreateMessageType) => {
     set({ isSendingMsg: true });
-    const { chatId, replyTo, content, image } = payload;
-    const { user } = useAuth.getState();
 
-    if (!chatId || !user?._id) return;
+    const { chatId, content = "", image = "", replyTo } = payload;
+    const user = useAuth.getState().user;
+
+    if (!chatId || !user?._id) {
+      set({ isSendingMsg: false });
+      return;
+    }
 
     const tempUserId = generateUUID();
 
-    const tempMessage = {
+    const tempMessage: MessageType = {
       _id: tempUserId,
       chatId,
-      content: content || "",
-      image: image || null,
-      sender: user,
+      content:"",
+      type:"",
+      text: content,
+      sender: {
+        _id: user._id,
+        username: user.username,
+        avatar: "",
+        isOnline: true,
+        name: user.name,
+        email: "",
+        isAI: user.isAI,
+        createdAt: user.createdAt.toISOString(),
+        updatedAt: user.updatedAt.toISOString(),
+      },
       replyTo: replyTo || null,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
-      status: "sending...",
+      status: "sending",
     };
 
-    // if (isAI) {
-    //  // AI Feature Source code link =>
-    // }
+
 
     set((state) => {
-      if (state.singleChat?.chat?._id !== chatId) return state;
+      if (state.singleChat?.chat._id !== chatId) return state;
       return {
         singleChat: {
           ...state.singleChat,
@@ -141,27 +150,26 @@ export const useChat = create<ChatState>()((set, get) => ({
     });
 
     try {
-      const { data } = await API.post("/chat/message/send", {
+      const { data } = await API.post<{ userMessage: MessageType }>("/chat/message/send", {
         chatId,
         content,
         image,
         replyToId: replyTo?._id,
       });
-      const { userMessage } = data;
-      //replace the temp user message
+
       set((state) => {
         if (!state.singleChat) return state;
         return {
           singleChat: {
             ...state.singleChat,
             messages: state.singleChat.messages.map((msg) =>
-              msg._id === tempUserId ? userMessage : msg
+              msg._id === tempUserId ? data.userMessage : msg
             ),
           },
         };
       });
-    } catch (error: any) {
-      toast.error(error?.response?.data?.message || "Failed to send message");
+    } catch (error: unknown) {
+      toast.error("Failed to send message");
     } finally {
       set({ isSendingMsg: false });
     }
@@ -169,36 +177,28 @@ export const useChat = create<ChatState>()((set, get) => ({
 
   addNewChat: (newChat: ChatType) => {
     set((state) => {
-      const existingChatIndex = state.chats.findIndex(
-        (c) => c._id === newChat._id
-      );
+      const existingChatIndex = state.chats.findIndex((c) => c._id === newChat._id);
       if (existingChatIndex !== -1) {
-        //move the chat to the top
         return {
           chats: [newChat, ...state.chats.filter((c) => c._id !== newChat._id)],
         };
       } else {
-        return {
-          chats: [newChat, ...state.chats],
-        };
+        return { chats: [newChat, ...state.chats] };
       }
     });
   },
 
-  updateChatLastMessage: (chatId, lastMessage) => {
+  updateChatLastMessage: (chatId: string, lastMessage: MessageType) => {
     set((state) => {
       const chat = state.chats.find((c) => c._id === chatId);
       if (!chat) return state;
       return {
-        chats: [
-          { ...chat, lastMessage },
-          ...state.chats.filter((c) => c._id !== chatId),
-        ],
+        chats: [{ ...chat, lastMessage }, ...state.chats.filter((c) => c._id !== chatId)],
       };
     });
   },
 
-  addNewMessage: (chatId, message) => {
+  addNewMessage: (chatId: string, message: MessageType) => {
     const chat = get().singleChat;
     if (chat?.chat._id === chatId) {
       set({
@@ -210,5 +210,3 @@ export const useChat = create<ChatState>()((set, get) => ({
     }
   },
 }));
-
-

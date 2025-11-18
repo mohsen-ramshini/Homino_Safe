@@ -11,6 +11,7 @@ export type LoginType = {
 };
 
 export interface UserType {
+  username: string;
   _id: string;
   name: string;
   email: string;

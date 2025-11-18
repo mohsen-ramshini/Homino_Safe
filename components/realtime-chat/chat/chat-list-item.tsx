@@ -1,10 +1,16 @@
 "use client";
 
-import { getOtherUserAndGroup, formatChatTime } from "@/lib/realtime-chat/helper";
 import { cn } from "@/lib/utils";
 import type { ChatType } from "@/features/chat/types/chat.type";
 import AvatarWithBadge from "../avatar-with-badge";
 import { usePathname } from "next/navigation";
+
+// Helper کوچک برای Matrix rooms
+const getMatrixRoomName = (chat: ChatType, currentUserId: string | null) => {
+  if (chat.groupName) return chat.groupName;
+  if (chat.participants?.length === 1) return chat.participants[0].name;
+  return "Unnamed Room";
+};
 
 interface PropsType {
   chat: ChatType;
@@ -14,34 +20,36 @@ interface PropsType {
 
 const ChatListItem = ({ chat, currentUserId, onClick }: PropsType) => {
   const pathname = usePathname();
-  const { lastMessage, createdAt } = chat;
+  const lastMessage = chat.lastMessage || null;
+  const createdAt = chat.createdAt || new Date().toISOString();
 
-  const { name, avatar, isOnline, isGroup } = getOtherUserAndGroup(
-    chat,
-    currentUserId
-  );
+  // اسم و وضعیت
+  const name = getMatrixRoomName(chat, currentUserId);
+  const isGroup = chat.participants && chat.participants.length > 1;
+  const isOnline = chat.participants?.some(p => p._id !== currentUserId && p.isOnline) || false;
 
-  const getLastMessageText = () => {
-    if (!lastMessage) {
-      return isGroup
-        ? chat.createdBy === currentUserId
-          ? "Group created"
-          : "You were added"
-        : "Send a message";
-    }
+const getLastMessageText = () => {
+  if (!lastMessage) {
+    return isGroup ? "Group created" : "Send a message";
+  }
 
-    if (lastMessage.image) return "📷 Photo";
+  if (lastMessage.image) return "📷 Photo";
 
-    if (isGroup && lastMessage.sender) {
-      return `${
-        lastMessage.sender._id === currentUserId
-          ? "You"
-          : lastMessage.sender.name
-      }: ${lastMessage.content}`;
-    }
+  // اگر lastMessage.content یک آبجکت باشه
+  if (typeof lastMessage.content === "object") {
+    // معمولاً text در فیلد "body" هست
+    return lastMessage.content.body || "[Unsupported message]";
+  }
 
-    return lastMessage.content;
-  };
+  if (isGroup && lastMessage.sender) {
+    const senderName = lastMessage.sender?._id === currentUserId ? "You" : lastMessage.sender?.name;
+    const text = typeof lastMessage.content === "string" ? lastMessage.content : lastMessage.content.body || "[Unsupported message]";
+    return `${senderName}: ${text}`;
+  }
+
+  return typeof lastMessage.content === "string" ? lastMessage.content : lastMessage.content.body || "[Unsupported message]";
+};
+
 
   return (
     <button
@@ -53,7 +61,7 @@ const ChatListItem = ({ chat, currentUserId, onClick }: PropsType) => {
     >
       <AvatarWithBadge
         name={name}
-        src={avatar}
+        src={chat.avatar || ""}
         isGroup={isGroup}
         isOnline={isOnline}
       />
@@ -62,10 +70,9 @@ const ChatListItem = ({ chat, currentUserId, onClick }: PropsType) => {
         <div className="flex items-center justify-between mb-0.5">
           <h5 className="text-sm font-semibold truncate">{name}</h5>
           <span className="text-xs ml-2 shrink-0 text-muted-foreground">
-            {formatChatTime(lastMessage?.updatedAt || createdAt)}
+            {new Date(lastMessage?.updatedAt || createdAt).toLocaleTimeString()}
           </span>
         </div>
-
         <p className="text-xs truncate text-muted-foreground -mt-px">
           {getLastMessageText()}
         </p>

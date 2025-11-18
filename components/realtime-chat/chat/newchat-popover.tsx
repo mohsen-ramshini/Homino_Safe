@@ -58,6 +58,12 @@ export const NewChatPopover = memo(() => {
       isGroup: true,
       participants: selectedUsers,
       groupName: groupName,
+      relyTo: {
+        event_id: "",
+        text: undefined
+      },
+      image: "",
+      content: ""
     });
     setIsOpen(false);
     resetState();
@@ -70,6 +76,12 @@ export const NewChatPopover = memo(() => {
       const response = await createChat({
         isGroup: false,
         participantId: userId,
+        relyTo: {
+          event_id: "",
+          text: undefined
+        },
+        image: "",
+        content: ""
       });
       setIsOpen(false);
       resetState();

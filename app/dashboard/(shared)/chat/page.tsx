@@ -10,15 +10,6 @@ export default function ChatPage() {
   const chatId = useChatId();
 
   return (
-    <div className="flex h-screen w-full bg-background">
-      {/* Sidebar */}
-      <div className="hidden lg:flex flex-col w-72 border-r border-border shrink-0 bg-red-600">
-        <ChatList />
-      </div>
-
-      {/* Main content area */}
-      <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
-        {/* Chat content */}
         <div className="flex-1 flex flex-col h-full overflow-y-auto">
           {!chatId ? (
             <div className="flex flex-1 items-center justify-center">
@@ -30,7 +21,5 @@ export default function ChatPage() {
             </div>
           )}
         </div>
-      </div>
-    </div>
   );
 }
