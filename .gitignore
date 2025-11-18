@@ -42,3 +42,5 @@ next-env.d.ts
 
 
 synapse/localhost.signing.key
+synapse*
+synapse/*.db*
