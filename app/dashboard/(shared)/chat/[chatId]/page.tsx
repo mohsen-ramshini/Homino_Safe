@@ -63,7 +63,7 @@ const SingleChat = () => {
 
   const { user } = useAuth();
   const { socket } = useSocket();
-  const currentUserId = user?._id || null;
+  const currentUserId = user?.id || null;
 
   const [replyTo, setReplyTo] = useState<MatrixMessageType | null>(null);
 
@@ -122,15 +122,10 @@ const handleReplyFromUI = (msg: MessageType) => {
   // 🟩 ساخت ChatType
   const chatInfo: ChatType | null = chatRoom
     ? {
-        _id: decodedChatId,
-        isGroup: false,
-        avatar:"",
-        participants: [],
-        createdBy: "",
-        groupName: chatRoom.name || undefined,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        lastMessage: lastMessage,
+        room_id: decodedChatId,
+        name: "",
+        member_count: 0,
+        canonical_alias: "",
       }
     : null;
 

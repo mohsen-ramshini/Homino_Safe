@@ -6,7 +6,6 @@ import { CodeBlock } from './code-block';
 
 const components: Partial<Components> = {
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-expect-error
   code: CodeBlock,
   pre: ({ children }) => <>{children}</>,
   ol: ({ node, children, ...props }) => {

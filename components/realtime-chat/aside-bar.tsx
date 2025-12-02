@@ -18,7 +18,7 @@ const AsideBar = () => {
   const { user, logout } = useAuth();
   const { theme, setTheme } = useTheme();
 
-  const isOnline = isUserOnline(user?._id);
+  const isOnline = isUserOnline(user?.id);
 
   return (
     <aside

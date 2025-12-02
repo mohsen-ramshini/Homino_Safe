@@ -7,6 +7,7 @@ import { usePathname } from "next/navigation";
 
 // Helper کوچک برای Matrix rooms
 const getMatrixRoomName = (chat: ChatType, currentUserId: string | null) => {
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   if (chat.groupName) return chat.groupName;
   if (chat.participants?.length === 1) return chat.participants[0].name;
   return "Unnamed Room";
