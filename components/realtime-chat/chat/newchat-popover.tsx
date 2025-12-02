@@ -1,8 +1,9 @@
-import { memo, useEffect, useState } from "react";
+import { memo, useEffect, useId, useState } from "react";
 import { useChat } from "@/hooks/realtime-chat/use-chat";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 import { Button } from "../ui/button";
 import { ArrowLeft, PenBoxIcon, Search, UsersIcon } from "lucide-react";
+import Cookies from "js-cookie";
 import {
   InputGroup,
   InputGroupAddon,
@@ -13,12 +14,85 @@ import { Spinner } from "../ui/spinner";
 import type { UserType } from "@/features/chat/types/auth.type";
 import AvatarWithBadge from "../avatar-with-badge";
 import { Checkbox } from "../ui/checkbox";
+import { useGetAdminUsers } from "@/features/users-list/api/use-get-users";
+import { useCreateRoom } from "@/features/chat/api/use-craete-room";
+import { useCreateGroup } from "@/features/chat/api/use-create-group"; 
+
 // import { useNavigate } from "react-router-dom";
 
+const MATRIX_HOMESERVER_URL = "http://192.168.100.17:8008";
+
+
+async function createChat({ participantId }: { participantId: string }) {
+  const url = `${MATRIX_HOMESERVER_URL}/_matrix/client/v3/createRoom`;
+
+  const body = {
+    preset: "trusted_private_chat",
+    is_direct: true,
+    invite: [participantId],
+  };
+
+  const res = await fetch(url, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${Cookies.get("matrix_access_token")}`,
+    },
+    body: JSON.stringify(body),
+  });
+
+  if (!res.ok) {
+    console.error("createChat error:", await res.text());
+    return null;
+  }
+
+  return await res.json(); // { room_id }
+}
+
+
+async function createGroupChat({
+  name,
+  participants,
+}: {
+  name: string;
+  participants: string[];
+}) {
+  const url = `${MATRIX_HOMESERVER_URL}/_matrix/client/v3/createRoom`;
+
+  const body = {
+    name,
+    preset: "private_chat",
+    is_direct: false,
+    invite: participants,
+  };
+
+  const res = await fetch(url, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${Cookies.get("matrix_access_token")}`,
+    },
+    body: JSON.stringify(body),
+  });
+
+  if (!res.ok) {
+    console.error("createGroupChat error:", await res.text());
+    return null;
+  }
+
+  return await res.json(); // { room_id }
+}
+
+
 export const NewChatPopover = memo(() => {
+  const createRoomMutation = useCreateRoom();
   const router = useRouter();
-  const { fetchAllUsers, users, isUsersLoading, createChat, isCreatingChat } =
+  const [search, setSearch] = useState("");
+  const { data: users, isLoading, error } = useGetAdminUsers();
+  const { fetchAllUsers, isUsersLoading, isCreatingChat } =
     useChat();
+    const createGroupMutation = useCreateGroup();
+
 
   const [isOpen, setIsOpen] = useState(false);
   const [isGroupMode, setIsGroupMode] = useState(false);
@@ -51,47 +125,67 @@ export const NewChatPopover = memo(() => {
     setIsOpen(open);
     resetState();
   };
+  
 
-  const handleCreateGroup = async () => {
-    if (!groupName.trim() || selectedUsers?.length === 0) return;
-    const response = await createChat({
-      isGroup: true,
-      participants: selectedUsers,
-      groupName: groupName,
-      relyTo: {
-        event_id: "",
-        text: undefined
-      },
-      image: "",
-      content: ""
+const handleCreateGroup = async () => {
+  console.log("handleCreateGroup called", { groupName, selectedUsers });
+
+  if (!groupName.trim() || selectedUsers.length === 0) {
+    console.warn("Group name or selected users are missing", { groupName, selectedUsers });
+    return;
+  }
+
+  try {
+    console.log("Calling mutateAsync...");
+    const response = await createGroupMutation.mutateAsync({
+      room_name: groupName,
+      topic: "General discussion",
+      invitees: selectedUsers,
+      is_public: false,
+      room_alias: groupName.replace(/\s+/g, "_").toLowerCase(),
     });
+    console.log("Group created:", response);
+
     setIsOpen(false);
     resetState();
-    router.push(`/chat/${response?._id}`);
-  };
+
+    router.push(`/chat/${response.room_id}`);
+  } catch (error) {
+    console.error("Group creation failed:", error);
+  }
+};
+
+
+  
+
 
   const handleCreateChat = async (userId: string) => {
     setLoadingUserId(userId);
     try {
-      const response = await createChat({
-        isGroup: false,
-        participantId: userId,
-        relyTo: {
-          event_id: "",
-          text: undefined
-        },
-        image: "",
-        content: ""
+      const response = await createRoomMutation.mutateAsync({
+        target_username: `${userId}`,
+        room_name: 'My_Room',
+        topic: 'General_discussion',
       });
+
+      console.log("response:", response);
+      
       setIsOpen(false);
       resetState();
-      router.push(`/chat/${response?._id}`);
     } finally {
       setLoadingUserId(null);
       setIsOpen(false);
       resetState();
     }
   };
+
+
+
+  const filteredUsers = users?.filter((user: UserType) =>
+  user.username.toLowerCase().includes(search.toLowerCase())
+);
+
+
 
   return (
     <Popover open={isOpen} onOpenChange={handleOpenChange}>
@@ -126,9 +220,9 @@ export const NewChatPopover = memo(() => {
 
           <InputGroup>
             <InputGroupInput
-              value={isGroupMode ? groupName : ""}
-              onChange={
-                isGroupMode ? (e) => setGroupName(e.target.value) : undefined
+              value={isGroupMode ? groupName : search}
+              onChange={(e) =>
+                isGroupMode ? setGroupName(e.target.value) : setSearch(e.target.value)
               }
               placeholder={isGroupMode ? "Enter group name" : "Search name"}
             />
@@ -145,7 +239,7 @@ export const NewChatPopover = memo(() => {
         >
           {isUsersLoading ? (
             <Spinner className="w-6 h-6" />
-          ) : users && users?.length === 0 ? (
+          ) : filteredUsers && filteredUsers?.length === 0 ? (
             <div className="text-center text-muted-foreground">
               No users found
             </div>
@@ -155,22 +249,22 @@ export const NewChatPopover = memo(() => {
                 disabled={isCreatingChat}
                 onClick={() => setIsGroupMode(true)}
               />
-              {users?.map((user) => (
+              {filteredUsers?.map((user: UserType) => (
                 <ChatUserItem
-                  key={user._id}
+                  key={user.id}
                   user={user}
-                  isLoading={loadingUserId === user._id}
+                  isLoading={loadingUserId === user.id}
                   disabled={loadingUserId !== null}
                   onClick={handleCreateChat}
                 />
               ))}
             </>
           ) : (
-            users?.map((user) => (
+            filteredUsers?.map((user: UserType) => (
               <GroupUserItem
-                key={user._id}
+                key={user.id}
                 user={user}
-                isSelected={selectedUsers.includes(user._id)}
+                isSelected={selectedUsers.includes(user.username)}
                 onToggle={toggleUserSelection}
               />
             ))
@@ -182,13 +276,9 @@ export const NewChatPopover = memo(() => {
             <Button
               onClick={handleCreateGroup}
               className="w-full"
-              disabled={
-                isCreatingChat ||
-                !groupName.trim() ||
-                selectedUsers.length === 0
-              }
+
             >
-              {isCreatingChat && <Spinner className="w-4 h-4" />}
+              {/* {createGroupMutation.isLoading && <Spinner className="w-4 h-4" />} */}
               Create Group
             </Button>
           </div>
@@ -201,9 +291,9 @@ NewChatPopover.displayName = "NewChatPopover";
 
 const UserAvatar = memo(({ user }: { user: UserType }) => (
   <>
-    <AvatarWithBadge name={user.name} src={user.avatar ?? ""} />
+    <AvatarWithBadge name={user.username} src={user.avatar ?? ""} />
     <div className="flex-1 min-w-0">
-      <h5 className="text-[13.5px] font-medium truncate">{user.name}</h5>
+      <h5 className="text-[13.5px] font-medium truncate">{user.username}</h5>
       <p className="text-xs text-muted-foreground">Hey there! I'm using whop</p>
     </div>
   </>
@@ -249,7 +339,7 @@ const ChatUserItem = memo(
     rounded-sm hover:bg-accent
        transition-colors text-left disabled:opacity-50"
       disabled={isLoading || disabled}
-      onClick={() => onClick(user._id)}
+      onClick={() => onClick(user.username)}
     >
       <UserAvatar user={user} />
       {isLoading && <Spinner className="absolute right-2 w-4 h-4 ml-auto" />}
@@ -269,7 +359,7 @@ const GroupUserItem = memo(
     isSelected: boolean;
     onToggle: (id: string) => void;
   }) => (
-    <label
+    <div
       role="button"
       className="w-full flex items-center gap-2 p-2
       rounded-sm hover:bg-accent
@@ -279,9 +369,9 @@ const GroupUserItem = memo(
       <UserAvatar user={user} />
       <Checkbox
         checked={isSelected}
-        onCheckedChange={() => onToggle(user._id)}
+        onCheckedChange={() => onToggle(user.username)}
       />
-    </label>
+    </div>
   )
 );
 

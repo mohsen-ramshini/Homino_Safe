@@ -7,7 +7,7 @@ import Cookies from "js-cookie";
 // --------------------------------------------
 import { MatrixMessageType } from "../types/chat.type";
 
-const MATRIX_HOMESERVER_URL = "http://localhost:8008";
+const MATRIX_HOMESERVER_URL = "http://192.168.100.87:8008";
 
 // پاسخ API ماتریکس برای /messages
 export interface MatrixRoomMessagesResponse {
@@ -24,7 +24,7 @@ export const useChatMessages = (roomId: string | null) => {
   useEffect(() => {
     if (!roomId) return;
 
-    const accessToken = Cookies.get("matrix_access_token");
+    const accessToken = Cookies.get("synapse_access_token");
     if (!accessToken) {
       setError("No Matrix access token found");
       setLoading(false);

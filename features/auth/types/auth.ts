@@ -26,6 +26,7 @@ export type SignUpFormProps = {
 export interface LoginResponse {
   access_token: string;
   refresh_token: string;
+  synapse_access_token : string;
 }
 
 export interface SignupResponse {

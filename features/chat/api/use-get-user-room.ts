@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import Cookies from "js-cookie";
 
-const MATRIX_HOMESERVER_URL = "http://localhost:8008";
+const MATRIX_HOMESERVER_URL = "http://192.168.100.87:8008";
 
 export const useMatrixRooms = () => {
   const [rooms, setRooms] = useState<any[]>([]);
@@ -10,7 +10,7 @@ export const useMatrixRooms = () => {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const accessToken = Cookies.get("matrix_access_token");
+    const accessToken = Cookies.get("synapse_access_token");
     if (!accessToken) {
       setError("No Matrix access token found");
       setLoading(false);

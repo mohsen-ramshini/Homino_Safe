@@ -113,53 +113,26 @@
 // };
 
 // export default ChatList;
-
-import { useEffect, useState } from "react";
-import { useChat } from "@/hooks/realtime-chat/use-chat";
-import { useMatrixRooms } from "@/features/chat/api/use-get-user-room";
+import { useState } from "react";
+import { useGetRooms } from "@/features/chat/api/use-get-rooms";
 import { Spinner } from "../ui/spinner";
 import ChatListItem from "./chat-list-item";
 import { useAuth } from "@/hooks/realtime-chat/use-auth";
 import ChatListHeader from "./chat-list-header";
-import { useSocket } from "@/hooks/realtime-chat/use-socket";
 import { useRouter } from "next/navigation";
 
 const ChatList = () => {
   const router = useRouter();
-  const { socket } = useSocket();
-  const { fetchChats, chats, isChatsLoading, addNewChat } = useChat();
-  const { rooms, loading: isMatrixLoading, error: matrixError } = useMatrixRooms();
+  const { data, isLoading: isMatrixLoading, error: matrixError } = useGetRooms();
   const { user } = useAuth();
-  const currentUserId = user?._id || null;
+  const currentUserId = user?.id || null;
 
   const [searchQuery, setSearchQuery] = useState("");
 
-  // ترکیب چت‌های داخلی و ماتریکس
-  const combinedChats = [...chats];
-  rooms.forEach((room) => {
-    if (!combinedChats.find((c) => c._id === room.roomId)) {
-      combinedChats.push({
-        _id: room.roomId,
-        groupName: room.name || "No name",
-        participants: [], // یا اگر می‌خوای می‌تونی participant اضافه کنی
-        lastMessage: room.lastEvent || null,
-        isGroup: false,
-        avatar:"",
-        createdBy: "",
-        createdAt: "",
-        updatedAt: ""
-      });
-    }
-  });
-
-  const filteredChats = combinedChats.filter(
+  const filteredChats = data?.rooms.filter(
     (chat) =>
-      chat.groupName?.toLowerCase().includes(searchQuery.toLowerCase())
+      chat.name?.toLowerCase().includes(searchQuery.toLowerCase())
   );
-
-  useEffect(() => {
-    fetchChats();
-  }, [fetchChats]);
 
   const onRoute = (id: string) => {
     router.push(`/dashboard/chat/${id}`);
@@ -173,21 +146,31 @@ const ChatList = () => {
         <ChatListHeader onSearch={setSearchQuery} />
         <div className="flex-1 h-[calc(100vh-100px)] overflow-y-auto">
           <div className="px-2 pb-10 pt-1 space-y-1">
-            {isChatsLoading || isMatrixLoading ? (
+            {isMatrixLoading ? (
               <div className="flex items-center justify-center">
                 <Spinner className="w-7 h-7" />
               </div>
             ) : filteredChats?.length === 0 ? (
               <div className="flex items-center justify-center">
-                {searchQuery ? "No chat found" : "No chats created"}
+                {searchQuery ? "No chat found" : "No chats available"}
               </div>
             ) : (
               filteredChats.map((chat) => (
                 <ChatListItem
-                  key={chat._id}
-                  chat={chat}
+                  key={chat.room_id}
+                  chat={{
+                    _id: chat.room_id,
+                    groupName: chat.name,
+                    participants: [],
+                    lastMessage: null,
+                    isGroup: false,
+                    avatar: "",
+                    createdBy: "",
+                    createdAt: "",
+                    updatedAt: "",
+                  }}
                   currentUserId={currentUserId}
-                  onClick={() => onRoute(chat._id)}
+                  onClick={() => onRoute(chat.room_id)}
                 />
               ))
             )}

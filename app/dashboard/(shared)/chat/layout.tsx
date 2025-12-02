@@ -1,10 +1,8 @@
 "use client";
 
-import { useState } from "react";
 import ChatList from "@/components/realtime-chat/chat/chat-list";
-import EmptyState from "@/components/realtime-chat/empty-state";
 import useChatId from "@/hooks/realtime-chat/use-chat-id";
-import { cn } from "@/lib/utils";
+
 
 export default function RootLayout({
   children,

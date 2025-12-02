@@ -115,15 +115,10 @@ export type MessageType = {
 //  CHAT TYPE
 // =======================================================
 export type ChatType = {
-  avatar: string;
-  _id: string;
-  lastMessage: MessageType | null;
-  participants: UserType[];
-  isGroup: boolean;
-  createdBy: string;
-  groupName?: string;
-  createdAt: string;
-  updatedAt: string;
+  room_id: string;
+  name: string;
+  member_count: number;
+  canonical_alias: string;
 };
 
 

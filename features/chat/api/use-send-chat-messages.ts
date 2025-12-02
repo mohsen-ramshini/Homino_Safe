@@ -2,11 +2,11 @@
 import axios from "axios";
 import Cookies from "js-cookie";
 
-const MATRIX_HOMESERVER_URL = "http://localhost:8008";
+const MATRIX_HOMESERVER_URL = "http://192.168.100.87:8008";
 
 export const useMatrixSendMessage = () => {
   const sendMessage = async (roomId: string, text: string) => {
-    const accessToken = Cookies.get("matrix_access_token");
+    const accessToken = Cookies.get("synapse_access_token");
     if (!accessToken) {
       throw new Error("Matrix access token missing!");
     }

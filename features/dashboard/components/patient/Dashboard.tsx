@@ -32,7 +32,7 @@ type OverviewData = {
 const baseHeartRate: number = 75; // ضربان قلب پایه فرد ایستاده
 
 const heartRateList: number[] = [
-  72, 74, 76, 78, 80, 82, 79, 77, 75, 73,
+  75, 75, 75, 78, 80, 82, 79, 77, 75, 73,
   71, 70, 69, 68, 70, 72, 74, 76, 78, 80,
 ];
 const bpSystolicList: number[] = [

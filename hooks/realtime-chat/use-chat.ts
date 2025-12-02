@@ -57,7 +57,7 @@ export const useChat = create<ChatState>()((set, get) => ({
       const { data } = await API.get<{ users: UserType[] }>("/user/all");
       set({ users: data.users });
     } catch (error: unknown) {
-      toast.error("Failed to fetch users");
+      // toast.error("Failed to fetch users");
     } finally {
       set({ isUsersLoading: false });
     }
@@ -69,7 +69,7 @@ export const useChat = create<ChatState>()((set, get) => ({
       const { data } = await API.get<{ chats: ChatType[] }>("/chat/all");
       set({ chats: data.chats });
     } catch (error: unknown) {
-      toast.error("Failed to fetch chats");
+      // toast.error("Failed to fetch chats");
     } finally {
       set({ isChatsLoading: false });
     }

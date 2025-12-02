@@ -6,7 +6,7 @@ import axios from 'axios';
 import { LoginFormValues, LoginResponse } from '../types/auth';
 import {useRouter} from "next/navigation"
 
-const MATRIX_HOMESERVER_URL = 'http://localhost:8008'; // URL و پورت Synapse
+const MATRIX_HOMESERVER_URL = 'http://192.168.100.87:8008'; // URL و پورت Synapse
 
 // 1️⃣ ورود به اپلیکیشن خودت
 const loginUser = async (credentials: LoginFormValues): Promise<LoginResponse> => {
@@ -27,8 +27,8 @@ const loginUser = async (credentials: LoginFormValues): Promise<LoginResponse> =
 const loginToMatrix = async (username: string, password: string) => {
   const response = await axios.post(`${MATRIX_HOMESERVER_URL}/_matrix/client/r0/login`, {
     type: 'm.login.password',
-    user: "ramesh",
-    password: "123",
+    user: "admin",
+    password: "adminpass",
   }, {
     headers: { 'Content-Type': 'application/json' },
   });
@@ -48,18 +48,19 @@ export const useLogin = () => {
       // 🌟 ورود به اپلیکیشن خودت
       Cookies.set('access_token', data.access_token, { expires: 1, secure: false, sameSite: 'Lax' });
       Cookies.set('refresh_token', data.refresh_token, { expires: 7, secure: false, sameSite: 'Lax' });
+      Cookies.set('synapse_access_token', data.synapse_access_token, { expires: 7, secure: false, sameSite: 'Lax' });
       toast.success('Logged in successfully');
       queryClient.invalidateQueries({ queryKey: ['user-profile'] });
 
       // 🌟 ورود همزمان به Synapse
-      try {
-        const matrixData = await loginToMatrix(variables.username, variables.password);
-        Cookies.set('matrix_access_token', matrixData.access_token, { expires: 1, secure: false, sameSite: 'Lax' });
-        console.log('Matrix login successful:', matrixData.user_id);
-      } catch (err) {
-        console.error('Matrix login error:', err);
-        toast.error('Matrix login to Synapse failed!');
-      }
+      // try {
+      //   const matrixData = await loginToMatrix(variables.username, variables.password);
+      //   Cookies.set('matrix_access_token', matrixData.access_token, { expires: 1, secure: false, sameSite: 'Lax' });
+      //   console.log('Matrix login successful:', matrixData.user_id);
+      // } catch (err) {
+      //   console.error('Matrix login error:', err);
+      //   toast.error('Matrix login to Synapse failed!');
+      // }
 
       // 🔹 در صورت نیاز می‌توانید این خط را فعال کنید
       // router.push("/")
