@@ -26,7 +26,7 @@ const ChatReplyBar = ({ replyTo, currentUserId, onCancel }: Props) => {
         bg-primary/10 rounded-md shadow-sm
         "
       >
-        <div className="flex-1">
+        {/* <div className="flex-1">
           <h5 className="font-medium">{senderName}</h5>
           {replyTo?.image ? (
             <p className="text-muted-foreground">📷 Photo</p>
@@ -38,7 +38,7 @@ const ChatReplyBar = ({ replyTo, currentUserId, onCancel }: Props) => {
               {replyTo.content}
             </p>
           )}
-        </div>
+        </div> */}
         <Button
           variant="ghost"
           size="icon"

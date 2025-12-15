@@ -30,20 +30,19 @@ const ChatBody = ({ chatId, messages, onReply }: Props) => {
   useEffect(() => {
     if (!messages.length) return;
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+    console.log("message",messages);
+    
   }, [messages]);
 
   return (
     <div className="w-full max-w-6xl mx-auto flex flex-col px-3 py-2">
-{messages.map((message, index) => (
-  <ChatBodyMessage
-    key={`${message._id || message.event_id}-${index}`}
-    message={message}
-    onReply={onReply}
-  />
-))}
-
-
-
+      {messages.map((message, index) => (
+        <ChatBodyMessage
+          key={`${message._id || message.event_id}-${index}`}
+          message={message}
+          onReply={onReply}
+        />
+      ))}
       <div ref={bottomRef} />
     </div>
   );

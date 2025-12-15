@@ -104,7 +104,7 @@ export const useChat = create<ChatState>()((set, get) => ({
   sendMessage: async (payload: CreateMessageType) => {
     set({ isSendingMsg: true });
 
-    const { chatId, content = "", image = "", replyTo } = payload;
+    const { chatId, content = "", replyTo } = payload;
     const user = useAuth.getState().user;
 
     if (!chatId || !user?._id) {
@@ -117,8 +117,13 @@ export const useChat = create<ChatState>()((set, get) => ({
     const tempMessage: MessageType = {
       _id: tempUserId,
       chatId,
-      content:"",
-      type:"",
+      file: "",
+      image: "",
+      event_id: "",
+      matrixContent: {
+        msgtype: "m.text",
+        body: content,
+      },
       text: content,
       sender: {
         _id: user._id,
@@ -137,36 +142,14 @@ export const useChat = create<ChatState>()((set, get) => ({
       status: "sending",
     };
 
-
-
-    set((state) => {
-      if (state.singleChat?.chat._id !== chatId) return state;
-      return {
-        singleChat: {
-          ...state.singleChat,
-          messages: [...state.singleChat.messages, tempMessage],
-        },
-      };
-    });
+    set((state) => state); // بدون تغییر
 
     try {
-      const { data } = await API.post<{ userMessage: MessageType }>("/chat/message/send", {
+      await API.post("/chat/message/send", {
         chatId,
         content,
-        image,
+        Image: undefined,
         replyToId: replyTo?._id,
-      });
-
-      set((state) => {
-        if (!state.singleChat) return state;
-        return {
-          singleChat: {
-            ...state.singleChat,
-            messages: state.singleChat.messages.map((msg) =>
-              msg._id === tempUserId ? data.userMessage : msg
-            ),
-          },
-        };
       });
     } catch (error: unknown) {
       toast.error("Failed to send message");
@@ -188,25 +171,12 @@ export const useChat = create<ChatState>()((set, get) => ({
     });
   },
 
+  // متدهای خارجی اما بدون منطق داخلی
   updateChatLastMessage: (chatId: string, lastMessage: MessageType) => {
-    set((state) => {
-      const chat = state.chats.find((c) => c._id === chatId);
-      if (!chat) return state;
-      return {
-        chats: [{ ...chat, lastMessage }, ...state.chats.filter((c) => c._id !== chatId)],
-      };
-    });
+    // هیچ کاری انجام نمی‌دهد
   },
 
   addNewMessage: (chatId: string, message: MessageType) => {
-    const chat = get().singleChat;
-    if (chat?.chat._id === chatId) {
-      set({
-        singleChat: {
-          chat: chat.chat,
-          messages: [...chat.messages, message],
-        },
-      });
-    }
+    // هیچ کاری انجام نمی‌دهد
   },
 }));

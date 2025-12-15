@@ -4,6 +4,7 @@ import { Separator } from '../ui/separator';
 import { Breadcrumbs } from '../breadcrumbs';
 import { UserNav } from './user-nav';
 import { ModeToggle } from './ThemeToggle/theme-toggle';
+import { AlertBar } from '@/features/dashboard/components/patient/AlertBar';
 // import CtaGithub from './cta-github';
 
 export default function Header() {
@@ -23,6 +24,7 @@ export default function Header() {
           {/* <SearchInput /> */}
         </div>
         <UserNav />
+        <AlertBar />
         <ModeToggle />
         {/* <ThemeSelector /> */}
       </div>

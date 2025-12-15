@@ -1,23 +1,21 @@
+// hooks/useDeviceLogin.ts
 import { useMutation } from "@tanstack/react-query";
 import axiosInstance from "@/api/axiosInstance";
 
-export type ResetPasswordInput = {
-  current_password: string;
-  new_password: string;
-};
 
-export const useResetPassword = () => {
+export const useDeviceLogin = () => {
   const mutation = useMutation({
-    mutationFn: async (data: ResetPasswordInput) => {
+    mutationFn: async () => {
       const res = await axiosInstance.post(
-        "/user/reset-password",
-        data,
+        "/device/pair",
+        {},
         {
           headers: {
             "Content-Type": "application/json",
           },
         }
       );
+
       return res.data;
     },
   });

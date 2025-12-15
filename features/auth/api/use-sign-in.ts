@@ -6,7 +6,7 @@ import axios from 'axios';
 import { LoginFormValues, LoginResponse } from '../types/auth';
 import {useRouter} from "next/navigation"
 
-const MATRIX_HOMESERVER_URL = 'http://192.168.100.87:8008'; // URL و پورت Synapse
+const MATRIX_HOMESERVER_URL = 'http://localhost:8008'; // URL و پورت Synapse
 
 // 1️⃣ ورود به اپلیکیشن خودت
 const loginUser = async (credentials: LoginFormValues): Promise<LoginResponse> => {

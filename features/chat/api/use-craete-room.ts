@@ -56,6 +56,7 @@ export const useCreateRoom = () => {
 
     onSuccess: (data) => {
       console.log('Room created successfully:', data);
+      // queryClient.invalidateQueries(["rooms"])
       // queryClient.invalidateQueries(['rooms']); // اگر نیاز داری لیست اتاق‌ها آپدیت شود
     },
 

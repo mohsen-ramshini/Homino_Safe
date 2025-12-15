@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/rules-of-hooks */
 import { memo, useEffect, useId, useState } from "react";
 import { useChat } from "@/hooks/realtime-chat/use-chat";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
@@ -17,81 +18,18 @@ import { Checkbox } from "../ui/checkbox";
 import { useGetAdminUsers } from "@/features/users-list/api/use-get-users";
 import { useCreateRoom } from "@/features/chat/api/use-craete-room";
 import { useCreateGroup } from "@/features/chat/api/use-create-group"; 
-
-// import { useNavigate } from "react-router-dom";
-
-const MATRIX_HOMESERVER_URL = "http://192.168.100.17:8008";
-
-
-async function createChat({ participantId }: { participantId: string }) {
-  const url = `${MATRIX_HOMESERVER_URL}/_matrix/client/v3/createRoom`;
-
-  const body = {
-    preset: "trusted_private_chat",
-    is_direct: true,
-    invite: [participantId],
-  };
-
-  const res = await fetch(url, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${Cookies.get("matrix_access_token")}`,
-    },
-    body: JSON.stringify(body),
-  });
-
-  if (!res.ok) {
-    console.error("createChat error:", await res.text());
-    return null;
-  }
-
-  return await res.json(); // { room_id }
-}
-
-
-async function createGroupChat({
-  name,
-  participants,
-}: {
-  name: string;
-  participants: string[];
-}) {
-  const url = `${MATRIX_HOMESERVER_URL}/_matrix/client/v3/createRoom`;
-
-  const body = {
-    name,
-    preset: "private_chat",
-    is_direct: false,
-    invite: participants,
-  };
-
-  const res = await fetch(url, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${Cookies.get("matrix_access_token")}`,
-    },
-    body: JSON.stringify(body),
-  });
-
-  if (!res.ok) {
-    console.error("createGroupChat error:", await res.text());
-    return null;
-  }
-
-  return await res.json(); // { room_id }
-}
+import { usePatients } from "@/features/patients-list/api/useGetPatients";
+import { useUser } from "@/context/UserContext";
 
 
 export const NewChatPopover = memo(() => {
+
+
   const createRoomMutation = useCreateRoom();
   const router = useRouter();
   const [search, setSearch] = useState("");
-  const { data: users, isLoading, error } = useGetAdminUsers();
-  const { fetchAllUsers, isUsersLoading, isCreatingChat } =
-    useChat();
-    const createGroupMutation = useCreateGroup();
+  const createGroupMutation = useCreateGroup();
+
 
 
   const [isOpen, setIsOpen] = useState(false);
@@ -100,10 +38,13 @@ export const NewChatPopover = memo(() => {
   const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
 
   const [loadingUserId, setLoadingUserId] = useState<string | null>(null);
+  const { user } = useUser()
 
-  useEffect(() => {
-    fetchAllUsers();
-  }, [fetchAllUsers]);
+const { data:SharedUsers ,isLoading} = user.role === "admin"
+  // eslint-disable-next-line react-hooks/rules-of-hooks
+  ? useGetAdminUsers()
+  : usePatients(true);
+
 
   const toggleUserSelection = (id: string) => {
     setSelectedUsers((prev) =>
@@ -140,7 +81,7 @@ const handleCreateGroup = async () => {
     const response = await createGroupMutation.mutateAsync({
       room_name: groupName,
       topic: "General discussion",
-      invitees: selectedUsers,
+      invites: selectedUsers,
       is_public: false,
       room_alias: groupName.replace(/\s+/g, "_").toLowerCase(),
     });
@@ -149,14 +90,11 @@ const handleCreateGroup = async () => {
     setIsOpen(false);
     resetState();
 
-    router.push(`/chat/${response.room_id}`);
+    router.push(`dashboard/chat/${response.room_id}`);
   } catch (error) {
     console.error("Group creation failed:", error);
   }
 };
-
-
-  
 
 
   const handleCreateChat = async (userId: string) => {
@@ -164,7 +102,7 @@ const handleCreateGroup = async () => {
     try {
       const response = await createRoomMutation.mutateAsync({
         target_username: `${userId}`,
-        room_name: 'My_Room',
+        room_name: `${userId}`,
         topic: 'General_discussion',
       });
 
@@ -181,9 +119,9 @@ const handleCreateGroup = async () => {
 
 
 
-  const filteredUsers = users?.filter((user: UserType) =>
+  const filteredUsers = SharedUsers?.filter((user: UserType) =>
   user.username.toLowerCase().includes(search.toLowerCase())
-);
+    );
 
 
 
@@ -214,7 +152,7 @@ const handleCreateGroup = async () => {
               </Button>
             )}
             <h3 className="text-lg font-semibold">
-              {isGroupMode ? "New Group" : "New Chat"}
+              {isGroupMode || user.role === "admin" ?"New Group" : "New Chat"}
             </h3>
           </div>
 
@@ -224,7 +162,7 @@ const handleCreateGroup = async () => {
               onChange={(e) =>
                 isGroupMode ? setGroupName(e.target.value) : setSearch(e.target.value)
               }
-              placeholder={isGroupMode ? "Enter group name" : "Search name"}
+              placeholder={isGroupMode || user.role === "admin" ? "Enter group name" : "Search name"}
             />
             <InputGroupAddon>
               {isGroupMode ? <UsersIcon /> : <Search />}
@@ -237,7 +175,7 @@ const handleCreateGroup = async () => {
          px-1 py-1 space-y-1
         "
         >
-          {isUsersLoading ? (
+          {isLoading ? (
             <Spinner className="w-6 h-6" />
           ) : filteredUsers && filteredUsers?.length === 0 ? (
             <div className="text-center text-muted-foreground">
@@ -245,10 +183,11 @@ const handleCreateGroup = async () => {
             </div>
           ) : !isGroupMode ? (
             <>
+            {user.role === "admin" &&
               <NewGroupItem
-                disabled={isCreatingChat}
+                disabled={false}
                 onClick={() => setIsGroupMode(true)}
-              />
+              />}
               {filteredUsers?.map((user: UserType) => (
                 <ChatUserItem
                   key={user.id}
@@ -294,7 +233,7 @@ const UserAvatar = memo(({ user }: { user: UserType }) => (
     <AvatarWithBadge name={user.username} src={user.avatar ?? ""} />
     <div className="flex-1 min-w-0">
       <h5 className="text-[13.5px] font-medium truncate">{user.username}</h5>
-      <p className="text-xs text-muted-foreground">Hey there! I'm using whop</p>
+      <p className="text-xs text-muted-foreground">Hey there! I'm using chat</p>
     </div>
   </>
 ));

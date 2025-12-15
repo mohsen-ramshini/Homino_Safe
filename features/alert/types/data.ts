@@ -9,11 +9,11 @@ export const sampleAlerts: AlertType[] = [
     timestamp: '2025-07-07T13:45:00Z',
     predictedAt: '2025-07-07T13:30:00Z',
     sensorData: {
-      bp: { systolic: 85, diastolic: 55 },
-      heartRate: 72,
-      spo2: 97,
-      temperature: 36.7,
-      activity: 'Sitting',
+      bp: { systolic: 139, diastolic: 86 },
+      heartRate: 65,
+      spo2: 99,
+      temperature: 36.2,
+      activity: 'Standing',
       fallDetected: false,
     },
     aiModelOutput: {

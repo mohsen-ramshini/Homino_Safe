@@ -1,12 +1,11 @@
-"use client"
+"use client";
+
 import React from "react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
 import { useProfile } from "@/features/medical-profile/api/useGetMedicalProfile";
-import MedicationsList from "@/features/medical-profile/components/MedicationsList";
-import { AlertTriangle, Pill } from "lucide-react";
 import MedicationsCards from "./MedicationsCards";
+import { AlertTriangle, Pill } from "lucide-react";
 import { LoaderIcon } from "@/components/chat/icons";
 
 const Medicine = () => {
@@ -19,31 +18,33 @@ const Medicine = () => {
     title: string;
     children: React.ReactNode;
   }) => (
-    <Card className="border-muted-foreground/20 shadow-sm hover:shadow-md transition duration-300 bg-white dark:bg-zinc-900 text-gray-900 dark:text-gray-100">
+    <Card className="rounded-2xl border border-blue-100 bg-white/80 backdrop-blur-xl shadow-sm hover:shadow-md transition-all">
       <CardHeader className="flex items-center space-x-2 pb-2">
-        <Pill className="h-5 w-5 text-muted-foreground dark:text-blue-400" />
-        <CardTitle className="text-md font-semibold text-gray-900 dark:text-gray-100">{title}</CardTitle>
+        <Pill className="h-5 w-5 text-blue-600" />
+        <CardTitle className="text-md font-semibold text-blue-800">{title}</CardTitle>
       </CardHeader>
-      <CardContent className="pt-4 text-sm leading-relaxed space-y-2">
-        {children}
-      </CardContent>
+      <CardContent className="pt-4 text-gray-700 space-y-2">{children}</CardContent>
     </Card>
   );
 
+  // ============================
+  // Loading
+  // ============================
   if (isLoading) {
     return (
-      <div className="flex flex-col items-center justify-center mt-10">
-        <div className="animate-spin w-10 h-10 text-blue-500 mb-4 flex items-center justify-center">
-          <LoaderIcon size={40} />
-        </div>
-        <span className="text-lg text-muted-foreground">Loading medicine data...</span>
+      <div className="flex flex-col items-center justify-center py-16">
+        <LoaderIcon />
+        <p className="text-blue-700 font-medium text-lg">Loading medicine data...</p>
       </div>
     );
   }
 
+  // ============================
+  // Error
+  // ============================
   if (error || !data) {
     return (
-      <div className="flex justify-center mt-10">
+      <div className="flex justify-center mt-12">
         <Alert variant="destructive" className="max-w-xl">
           <AlertTriangle className="h-5 w-5" />
           <AlertTitle>Error</AlertTitle>
@@ -55,16 +56,19 @@ const Medicine = () => {
     );
   }
 
+  // ============================
+  // Main Layout
+  // ============================
   return (
-    <div className="max-w-4xl mx-auto px-4 py-8 bg-white dark:bg-zinc-800 transition-colors duration-300">
-      <h1 className="text-2xl font-bold mb-4 text-gray-900 dark:text-gray-100">Medicine Management</h1>
-      <p className="text-gray-600 dark:text-gray-300 mb-6">
+    <div className="mx-auto px-4 py-10 bg-gradient-to-b from-blue-50 to-white min-h-screen">
+      <h1 className="text-2xl font-bold mb-2 text-blue-800">Medicine Management</h1>
+      <p className="text-gray-600 mb-6">
         Manage your medications and prescriptions here.
       </p>
 
       <SectionCard title="Medications">
         {data.medications.length === 0 ? (
-          <p className="text-gray-700 dark:text-gray-300">No medications recorded.</p>
+          <p className="text-gray-700">No medications recorded.</p>
         ) : (
           <MedicationsCards medications={data.medications} />
         )}

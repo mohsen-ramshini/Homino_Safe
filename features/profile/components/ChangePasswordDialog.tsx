@@ -1,4 +1,3 @@
-// components/ChangePasswordDialog.tsx
 "use client";
 
 import { Controller, useForm } from "react-hook-form";
@@ -14,6 +13,9 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
+import { LoaderIcon } from "@/components/chat/icons";
+import { ResetPasswordInput, useResetPassword } from "../hook/useResetPassword";
 
 const passwordSchema = z.object({
   current_password: z.string().min(6, "Current password is required"),
@@ -25,19 +27,34 @@ type PasswordForm = z.infer<typeof passwordSchema>;
 type Props = {
   open: boolean;
   onClose: () => void;
-  onSubmit: (data: PasswordForm) => void;
 };
 
-export default function ChangePasswordDialog({ open, onClose, onSubmit }: Props) {
+export default function ChangePasswordDialog({ open, onClose }: Props) {
+  const { mutate: resetPassword, isLoading } = useResetPassword();
+
   const form = useForm<PasswordForm>({
     resolver: zodResolver(passwordSchema),
     mode: "onChange",
+    defaultValues: {
+      current_password: "",
+      new_password: "",
+    },
   });
 
-  const handleSubmit = (data: PasswordForm) => {
-    onSubmit(data);
-    form.reset();
-  };
+const handleSubmit = (data: PasswordForm) => {
+  // assert data is ResetPasswordInput
+  resetPassword(data as ResetPasswordInput, {
+    onSuccess: () => {
+      toast.success("Password changed successfully!");
+      form.reset();
+      onClose();
+    },
+    onError: () => {
+      toast.error("Failed to change password.");
+    },
+  });
+};
+
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
@@ -47,10 +64,12 @@ export default function ChangePasswordDialog({ open, onClose, onSubmit }: Props)
         </DialogHeader>
 
         <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+          {/* Current password */}
           <div>
             <Label htmlFor="current_password" className="mb-1 block">
               Current Password
             </Label>
+
             <Controller
               control={form.control}
               name="current_password"
@@ -60,10 +79,10 @@ export default function ChangePasswordDialog({ open, onClose, onSubmit }: Props)
                   type="password"
                   placeholder="Enter current password"
                   {...field}
-                  className="w-full"
                 />
               )}
             />
+
             {form.formState.errors.current_password && (
               <p className="text-xs text-red-500">
                 {form.formState.errors.current_password.message}
@@ -71,10 +90,12 @@ export default function ChangePasswordDialog({ open, onClose, onSubmit }: Props)
             )}
           </div>
 
+          {/* New password */}
           <div>
             <Label htmlFor="new_password" className="mb-1 block">
               New Password
             </Label>
+
             <Controller
               control={form.control}
               name="new_password"
@@ -84,10 +105,10 @@ export default function ChangePasswordDialog({ open, onClose, onSubmit }: Props)
                   type="password"
                   placeholder="Enter new password"
                   {...field}
-                  className="w-full"
                 />
               )}
             />
+
             {form.formState.errors.new_password && (
               <p className="text-xs text-red-500">
                 {form.formState.errors.new_password.message}
@@ -99,7 +120,13 @@ export default function ChangePasswordDialog({ open, onClose, onSubmit }: Props)
             <Button type="button" variant="outline" onClick={onClose}>
               Cancel
             </Button>
-            <Button type="submit" className="bg-orange-600 hover:bg-orange-700 text-white">
+
+            <Button
+              type="submit"
+              disabled={isLoading}
+              className="bg-orange-600 hover:bg-orange-700 text-white flex items-center gap-2"
+            >
+              {isLoading && <LoaderIcon />}
               Change Password
             </Button>
           </DialogFooter>

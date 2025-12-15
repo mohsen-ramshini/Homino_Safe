@@ -117,65 +117,90 @@ import { useState } from "react";
 import { useGetRooms } from "@/features/chat/api/use-get-rooms";
 import { Spinner } from "../ui/spinner";
 import ChatListItem from "./chat-list-item";
+import InviteListItem from "./InviteListItem";
 import { useAuth } from "@/hooks/realtime-chat/use-auth";
 import ChatListHeader from "./chat-list-header";
 import { useRouter } from "next/navigation";
+import { unknown } from "zod/v4";
 
 const ChatList = () => {
   const router = useRouter();
-  const { data, isLoading: isMatrixLoading, error: matrixError } = useGetRooms();
+  const { data, isLoading, error } = useGetRooms();
   const { user } = useAuth();
   const currentUserId = user?.id || null;
 
   const [searchQuery, setSearchQuery] = useState("");
 
-  const filteredChats = data?.rooms.filter(
-    (chat) =>
-      chat.name?.toLowerCase().includes(searchQuery.toLowerCase())
+  const joinedRooms = data?.joined || [];
+  const invitedRooms = data?.invited || [];
+
+  const filteredJoined = joinedRooms.filter((room) =>
+    room.name?.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const onRoute = (id: string) => {
-    router.push(`/dashboard/chat/${id}`);
-  };
+  const filteredInvited = invitedRooms.filter((room) =>
+    room.name?.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
-  if (matrixError) console.error("Matrix rooms error:", matrixError);
+  const onRoute = (id: string) => router.push(`/dashboard/chat/${id}`);
+
+  if (error) console.error("Matrix rooms error:", error);
 
   return (
-    <div className="pb-20 lg:pb-0 lg:max-w-[379px] lg:block border-r border-border bg-sidebar max-w-[calc(100%-40px)] w-full left-10 z-[98]">
-      <div className="flex-col">
-        <ChatListHeader onSearch={setSearchQuery} />
-        <div className="flex-1 h-[calc(100vh-100px)] overflow-y-auto">
-          <div className="px-2 pb-10 pt-1 space-y-1">
-            {isMatrixLoading ? (
-              <div className="flex items-center justify-center">
-                <Spinner className="w-7 h-7" />
-              </div>
-            ) : filteredChats?.length === 0 ? (
-              <div className="flex items-center justify-center">
-                {searchQuery ? "No chat found" : "No chats available"}
-              </div>
-            ) : (
-              filteredChats.map((chat) => (
-                <ChatListItem
-                  key={chat.room_id}
-                  chat={{
-                    _id: chat.room_id,
-                    groupName: chat.name,
-                    participants: [],
-                    lastMessage: null,
-                    isGroup: false,
-                    avatar: "",
-                    createdBy: "",
-                    createdAt: "",
-                    updatedAt: "",
-                  }}
-                  currentUserId={currentUserId}
-                  onClick={() => onRoute(chat.room_id)}
-                />
-              ))
-            )}
+    <div className="pb-20 lg:pb-0 lg:max-w-[379px] border-r border-border bg-sidebar">
+      <ChatListHeader onSearch={setSearchQuery} />
+
+      <div className="h-[calc(100vh-100px)] overflow-y-auto px-2 pb-10 pt-1 space-y-3">
+
+        {isLoading ? (
+          <div className="flex items-center justify-center">
+            <Spinner className="w-7 h-7" />
           </div>
-        </div>
+        ) : (
+          <>
+            {/* JOINED ROOMS */}
+            {filteredJoined.length > 0 && (
+              <div className="space-y-1">
+                {filteredJoined.map((room) => (
+                  <ChatListItem
+                    key={room.room_id}
+                    chat={{
+                      room_id: room.room_id,
+                      groupName: room.name || "Unnamed Room",
+                      participants: [],
+                      lastMessage: null,
+                      isGroup: false,
+                      avatar: "",
+                      createdAt: "",
+                      _id: unknown,
+                      name: "",
+                      member_count: 0
+                    }}
+                    currentUserId={currentUserId}
+                    onClick={() => onRoute(room.room_id)}
+                  />
+                ))}
+              </div>
+            )}
+
+            {/* INVITED ROOMS */}
+            {filteredInvited.length > 0 && (
+              <div className="space-y-1">
+                <h4 className="text-xs text-gray-500 px-1">Invitations</h4>
+                {filteredInvited.map((room) => (
+                  <InviteListItem key={room.room_id} room={room} />
+                ))}
+              </div>
+            )}
+
+            {/* EMPTY STATES */}
+            {filteredJoined.length === 0 && filteredInvited.length === 0 && (
+              <div className="flex items-center justify-center">
+                {searchQuery ? "No rooms found" : "No rooms available"}
+              </div>
+            )}
+          </>
+        )}
       </div>
     </div>
   );

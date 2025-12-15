@@ -21,39 +21,45 @@ import type {
   MessageType,
   ChatType,
 } from "@/features/chat/types/chat.type";
+import { unknown } from "zod/v4";
 
-// 🟦 مپِ تبدیل MatrixMessage → MessageType
+
 const mapMatrixToMessage = (m: MatrixMessageType): MessageType => {
   return {
-  _id: m.event_id,
-  event_id: m.event_id,
-  chatId: m.room_id,
+    _id: m.event_id,
+    event_id: m.event_id,
+    chatId: m.room_id,
 
-  sender: null, // اگر later اضافه شد
+    sender: {
+      _id: m.sender,
+      name: m.sender,
+      avatar: null,
+      username: "",
+      createdAt: "",
+      updatedAt: ""
+    },
 
-  text: m.content.msgtype === "m.text" ? m.content.body : null,
-  image: m.content.msgtype === "m.image"
-    ? m.content.url
-    : null,
-  file: m.content.msgtype === "m.file"
-    ? { url: m.content.url, name: m.content.body }
-    : null,
+    text: m.content.msgtype === "m.text" ? m.content.body : null,
+    image: m.content.msgtype === "m.image" ? m.content.url : null,
+    file:
+      m.content.msgtype === "m.file"
+        ? { url: m.content.url, name: m.content.body }
+        : null,
 
-  matrixContent: m.content,
+    matrixContent: m.content,
 
-  replyTo: m.replyToEventId
-    ? { event_id: m.replyToEventId }
-    : null,
+    replyTo: m.replyToEventId ? { event_id: m.replyToEventId } : null,
 
-  createdAt: new Date(m.origin_server_ts).toISOString(),
-  updatedAt: new Date(m.origin_server_ts).toISOString(),
+    createdAt: new Date(m.origin_server_ts).toISOString(),
+    updatedAt: new Date(m.origin_server_ts).toISOString(),
 
-  status: m.status,
-  streaming: m.streaming,
-  content: undefined,
-  type: "",
+    status: m.status,
+    streaming: m.streaming,
+    // content: undefined,
+    // type: "",
+  };
 };
-};
+
 
 
 
@@ -124,8 +130,14 @@ const handleReplyFromUI = (msg: MessageType) => {
     ? {
         room_id: decodedChatId,
         name: "",
+        isGroup:false,
         member_count: 0,
         canonical_alias: "",
+        avatar:"",
+        _id: unknown,
+        createdAt: "",
+        lastMessage: null,
+        groupName: "",
       }
     : null;
 
@@ -141,8 +153,11 @@ useEffect(() => {
 }, [decodedChatId, socket]);
 
 const uiMessages: MessageType[] = useMemo(() => {
-  return allMessages.map(mapMatrixToMessage);
+  return allMessages
+    .map(mapMatrixToMessage)
+    .filter((m) => !!m.text || !!m.image || !!m.file);
 }, [allMessages]);
+
 
   // Loading
   if (matrixLoading || roomsLoading) {

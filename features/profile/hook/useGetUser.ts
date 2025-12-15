@@ -12,14 +12,12 @@ export const getUserProfile = async (): Promise<User> => {
     throw new Error("No tokens available");
   }
 
-  const response = await axiosInstance.get<User>("/user/");
+  const response = await axiosInstance.get<User>("/api/profile/user/");
   return response.data;
 };
 
 
 export const useUserProfile = () => {
-  const accessToken = Cookies.get("access_token");
-  const refreshToken = Cookies.get("refresh_token");
 
   // Define the fetcher function
   const fetcher = async () => {

@@ -7,7 +7,7 @@ import axios, {
 } from 'axios';
 import Cookies from 'js-cookie';
 
-const API_BASE_URL = 'http://192.168.100.87:8888';
+const API_BASE_URL = 'http://127.0.0.1:8888';
 // const API_BASE_URL = 'http://130.185.120.67:8888';
 
 const axiosInstance: AxiosInstance = axios.create({

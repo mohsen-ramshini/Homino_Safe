@@ -6,7 +6,7 @@ import { AxiosError } from 'axios';
 export interface CreateGroupPayload {
   room_name: string;
   topic: string;
-  invitees: string[];
+  invites: string[];
   is_public: boolean;
   room_alias: string;
 }

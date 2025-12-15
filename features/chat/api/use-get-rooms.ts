@@ -12,6 +12,8 @@ export interface Room {
 }
 
 export interface GetRoomsResponse {
+  invited: any[];
+  joined: any[];
   rooms: Room[];
 }
 
@@ -26,7 +28,7 @@ export const useGetRooms = () => {
     }
 
     try {
-      const response = await axiosInstance.get<GetRoomsResponse>('/synapse/rooms', {
+      const response = await axiosInstance.get<GetRoomsResponse>('/synapse/rooms/unified', {
         headers: {
           'Content-Type': 'application/json',
           'Synapse-Authorization': `Bearer ${matrix_access_token}`,

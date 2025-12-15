@@ -1,22 +1,26 @@
 // =======================================================
-//  UserType (اگر از قبل داری میتونی حذف کنی)
+//  USER TYPES
 // =======================================================
+
 export type UserType = {
-  isOnline: boolean;
-  name: any;
   _id: string;
   username: string;
-  email?: string; // اضافه شد
-  isAI?: boolean; // اگر نیاز دارید
+  name: string;
+  email?: string;
   avatar?: string;
-  matrixId?: string; // مثلا @user:server
+  matrixId?: string; // @user:server
+  isAI?: boolean;
+  isOnline?: boolean;
   createdAt: string;
   updatedAt: string;
 };
 
+// Alias for UI usage (future-proof)
+export type ChatUserType = UserType;
+
 
 // =======================================================
-//  MATRIX CONTENT TYPES
+//  MATRIX MESSAGE CONTENT TYPES
 // =======================================================
 
 export type MatrixTextContent = {
@@ -47,23 +51,26 @@ export type MatrixFileContent = {
   };
 };
 
-// Union تمام انواع پیام ماتریکس
 export type MatrixMessageContent =
   | MatrixTextContent
   | MatrixImageContent
   | MatrixFileContent
-  | { msgtype: string; [key: string]: any };
+  | {
+      msgtype: string; // fallback for unsupported matrix types
+      [key: string]: unknown;
+    };
 
 
 // =======================================================
-//  MATRIX MESSAGE TYPE
+//  MATRIX EVENT MESSAGE
 // =======================================================
+
 export type MatrixMessageType = {
   event_id: string;
-  sender: string;
+  room_id: string;
+  sender: string; // matrix user id
   content: MatrixMessageContent;
   origin_server_ts: number;
-  room_id: string;
 
   // frontend only
   status?: "sending" | "sent" | "failed";
@@ -73,86 +80,107 @@ export type MatrixMessageType = {
 
 
 // =======================================================
-//  INTERNAL UI MESSAGE TYPE
+//  INTERNAL UI MESSAGE TYPE (SINGLE SOURCE OF TRUTH)
 // =======================================================
 
-export type ChatUserType = UserType & {
-  isOnline?: boolean;
-};
-
-
 export type MessageType = {
-  content: any;
-  type: string;
+  file: any;
+  image: any;
+  text: any;
+  event_id: any;
   _id: string;
-  event_id?: string;
   chatId: string;
 
   sender: ChatUserType | null;
 
-  text?: string | null;
-  image?: string | null;
-  file?: {
-    url: string;
-    name: string;
-  } | null;
+  matrixEventId?: string;
+  matrixContent: MatrixMessageContent;
 
-  matrixContent?: MatrixMessageContent;
   replyTo?: {
     event_id: string;
     text?: string | null;
   } | null;
 
-  createdAt?: string;
-  updatedAt?: string;
-
   status?: "sending" | "sent" | "failed";
   streaming?: boolean;
+
+  createdAt: string;
+  updatedAt: string;
 };
 
 
 // =======================================================
-//  CHAT TYPE
+//  CHAT / ROOM TYPES
 // =======================================================
+
 export type ChatType = {
+  avatar: string;
+  _id(_id: any): unknown;
+  createdAt: string;
+  lastMessage: null;
+  groupName: any;
   room_id: string;
   name: string;
   member_count: number;
-  canonical_alias: string;
+  canonical_alias?: string;
+  isGroup: boolean;
+  participants?: ChatUserType[];
 };
 
 
 // =======================================================
 //  CREATE CHAT
 // =======================================================
+
 export type CreateChatType = {
-  relyTo:{
-    event_id: string;
-    text?: string | null;
-  } ;
-  image:string;
-  content:string;
-  participantId?: string;
+  participantId?: string; // for direct chat
+  participants?: string[]; // for group
   isGroup?: boolean;
-  participants?: string[];
   groupName?: string;
+
+  initialMessage?: {
+    content: string;
+    image?: File | null;
+    replyTo?: {
+      event_id: string;
+      text?: string | null;
+    } | null;
+  };
 };
 
 
 // =======================================================
 //  SEND MESSAGE
 // =======================================================
+
 export type CreateMessageType = {
   chatId: string;
-  replyTo:{
+
+  content?: string; // text message
+  imageFile?: File | null;
+  file?: File | null;
+
+  replyTo?: {
     _id: any;
     event_id: string;
     text?: string | null;
-  } ;
-  image:string;
-  content:string;
-  text?: string;
-  imageFile?: File | null;
-  file?: File | null;
-  replyToEventId?: string | null;
+  } | null;
+};
+
+
+// =======================================================
+//  OPTIONAL UI HELPER UNION (RECOMMENDED)
+// =======================================================
+
+export type UIMessageKind =
+  | { kind: "text"; text: string }
+  | { kind: "image"; url: string }
+  | { kind: "file"; url: string; name: string };
+
+
+  // types/matrix-whoami.type.ts
+export type MatrixWhoAmIResponse = {
+  user_id: string;      // @user:server
+  device_id?: string;
+  is_guest?: boolean;
 };

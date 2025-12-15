@@ -17,8 +17,8 @@ const META_THEME_COLORS = {
 };
 
 export const metadata: Metadata = {
-  title: 'Homino Safe',
-  description: 'Monitoring and management platform for Homino Safe',
+  title: 'Senisentry',
+  description: 'Monitoring and management platform for Seniosentry',
 };
 
 export const viewport: Viewport = {
