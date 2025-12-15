@@ -52,5 +52,5 @@ To build and run the app using Docker:
 
 ```bash
 docker build -t homino-app .
-docker run -p 3000:3000 homino-app
+docker run -p 3002:3002 homino-app
 ```

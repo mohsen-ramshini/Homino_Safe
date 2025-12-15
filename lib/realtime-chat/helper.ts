@@ -24,16 +24,18 @@ export const getOtherUserAndGroup = (
     };
   }
 
-  const other = chat?.participants.find((p) => p._id !== currentUserId);
-  const isOnline = isUserOnline(other?._id ?? "");
+  // const other = chat?.participants.find((p) => p._id !== currentUserId);
+  // const isOnline = isUserOnline(other?._id ?? "");
 
   return {
-    name: other?.name || "Unknown",
-    subheading: isOnline ? "Online" : "Offline",
-    avatar: other?.avatar || "",
+    // name: other?.username || "Unknown",
+    name: "Unknown",
+    // subheading: isOnline ? "Online" : "Offline",
+    subheading: "Offline",
+    // avatar: other?.avatar || "",
+    avatar: "",
     isGroup: false,
-    isOnline,
-    isAI: other?.isAI || false,
+    // isOnline,
   };
 };
 

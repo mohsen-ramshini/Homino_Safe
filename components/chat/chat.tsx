@@ -98,7 +98,6 @@ export function Chat({
       } else {
         // Map UIMessage<ChatMessage, UIDataTypes>[] to ChatMessage[]
         setLocalMessages(
-          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
           messages.map((msg: any) => ('data' in msg ? msg.data : msg) as ChatMessage)
         );
       }
@@ -177,7 +176,6 @@ export function Chat({
             setLocalMessages((prev) => messages(prev) as ChatMessage[]);
           } else {
             setLocalMessages(
-              // eslint-disable-next-line @typescript-eslint/ban-ts-comment
               messages.map((msg: any) => ('data' in msg ? msg.data : msg) as ChatMessage)
             );
           }

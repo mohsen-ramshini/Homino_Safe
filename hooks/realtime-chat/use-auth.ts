@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { API } from "@/lib/realtime-chat/axios-client";
+import  API  from "@/lib/realtime-chat/axios-client";
 
 import type { LoginType, RegisterType, UserType } from "@/features/chat/types/auth.type";
 import { toast } from "sonner";

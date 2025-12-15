@@ -6,7 +6,7 @@ import {ProfileData} from "@/features/medical-profile/types/medicalprofile"
 
 // توابع درخواست API
 const fetchProfile = async (): Promise<ProfileData> => {
-  const response = await axiosInstance.get<ProfileData>('/api/profile'); // آدرس واقعی‌ات رو بذار
+  const response = await axiosInstance.get<ProfileData>('/api/profile/ehr');
   if (response.status !== 200) {
     throw new Error('Failed to fetch profile data');
   }

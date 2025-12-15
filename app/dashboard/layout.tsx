@@ -5,10 +5,11 @@ import type { Metadata } from 'next';
 import { cookies } from 'next/headers';
 import  AssistantModal  from '@/components/ui/assistant-ui/assistant-modal';
 import { LayoutSidebarProvider } from '@/context/SidebarContext';
+import { NotificationProvider } from '@/context/NotificationContext';
 
 
 export const metadata: Metadata = {
-  title: 'Homino Dashboard',
+  title: 'Seniosentry Dashboard',
   description: 'A Monitoring System for Elderly Care',
 };
 
@@ -21,19 +22,19 @@ export default async function DashboardLayout({
   const cookieStore = await cookies();
   const defaultOpen = cookieStore.get("sidebar_state")?.value === "true"
   return (
-
-          <SidebarProvider defaultOpen={defaultOpen}>
-            <LayoutSidebarProvider>
-            <AppSidebar />
-            <SidebarInset>
-              <AssistantModal />
-              <Header />
-              {/* page main content */}
-              {children}
-              {/* page main content ends */}
-            </SidebarInset>
-            </LayoutSidebarProvider>
-          </SidebarProvider>
-
+    <SidebarProvider defaultOpen={defaultOpen}>
+      <LayoutSidebarProvider>
+        <NotificationProvider>
+      <AppSidebar />
+      <SidebarInset>
+        <AssistantModal />
+        <Header />
+        {/* page main content */}
+        {children}
+        {/* page main content ends */}
+      </SidebarInset>
+      </NotificationProvider>
+      </LayoutSidebarProvider>
+    </SidebarProvider>
   );
 }

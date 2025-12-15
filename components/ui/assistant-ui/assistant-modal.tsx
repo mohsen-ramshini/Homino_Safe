@@ -19,6 +19,8 @@ const FloatingAssistantButton = forwardRef<
 
   // اگر مسیر شروعش /dashboard/ai بود، کامپوننت رندر نشود
   if (pathname.startsWith("/dashboard/ai")) return null;
+  if (pathname.startsWith("/dashboard/chat")) return null;
+  if (pathname.startsWith("/dashboard/users")) return null;
 
   const handleClick = () => {
     router.push("/dashboard/ai");

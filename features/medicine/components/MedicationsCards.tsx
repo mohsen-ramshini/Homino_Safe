@@ -15,7 +15,7 @@ interface Props {
 
 const MedicationsCards: React.FC<Props> = ({ medications }) => {
   if (medications.length === 0) {
-    return <p>No medications recorded.</p>;
+    return <p className="text-gray-700">No medications recorded.</p>;
   }
 
   return (
@@ -23,21 +23,25 @@ const MedicationsCards: React.FC<Props> = ({ medications }) => {
       {medications.map((med) => (
         <div
           key={med.id}
-          className="border rounded-lg shadow-sm hover:shadow-md transition p-5 bg-white dark:bg-zinc-900 text-gray-900 dark:text-gray-100 border-gray-200 dark:border-zinc-700"
+          className="rounded-2xl border border-blue-100 bg-white/80 backdrop-blur-xl shadow-sm hover:shadow-md transition-all p-5"
         >
+          {/* Header */}
           <div className="flex items-center space-x-3 mb-3">
-            <Pill className="h-6 w-6 text-indigo-600 dark:text-blue-400" />
-            <h3 className="text-lg font-semibold">{med.name}</h3>
+            <Pill className="h-6 w-6 text-blue-600" />
+            <h3 className="text-lg font-semibold text-blue-800">{med.name}</h3>
           </div>
 
-          <p className="text-sm text-gray-700 dark:text-gray-300">
-            <span className="font-medium">Dosage:</span> {med.dosage}
+          {/* Dosage & Frequency */}
+          <p className="text-gray-700 text-sm">
+            <span className="font-medium text-blue-700">Dosage:</span> {med.dosage}
           </p>
-          <p className="text-sm text-gray-700 dark:text-gray-300">
-            <span className="font-medium">Frequency:</span> {med.frequency}
+          <p className="text-gray-700 text-sm">
+            <span className="font-medium text-blue-700">Frequency:</span> {med.frequency}
           </p>
+
+          {/* Notes */}
           {med.notes && (
-            <p className="mt-2 text-sm italic text-gray-500 dark:text-gray-400">
+            <p className="mt-2 text-sm italic text-gray-600 border-l-2 border-blue-200 pl-2">
               {med.notes}
             </p>
           )}

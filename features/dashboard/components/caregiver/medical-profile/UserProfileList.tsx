@@ -17,6 +17,7 @@ import { AssignPatientModal } from "./AssignPatientModal";
 import { Thresholds } from "../../../types/caregiver/thresholdsSchema ";
 import { useUpdateProfileSettings } from "@/features/dashboard/api/caregiver/useUpdateProfileSettings ";
 import { LoaderIcon } from "@/components/chat/icons";
+import { ProfileSettingsPayload } from "@/features/patients-list/types/thresholdsSchema ";
 
 interface UserProfileListProps {
   userId: number;
@@ -34,7 +35,7 @@ const UserProfileList: FC<UserProfileListProps> = ({ userId }) => {
     bp_sys_max: 0,
   });
 
-  const handleThresholdSubmit = (data: Thresholds) => {
+  const handleThresholdSubmit = (data: ProfileSettingsPayload) => {
     mutate(data, {
       onSuccess: () => {
         // پیام موفقیت یا بستن مودال را اینجا اضافه کنید

@@ -10,24 +10,26 @@ import { Form, FormField, FormItem } from "../ui/form";
 import { Input } from "../ui/input";
 import ChatReplyBar from "./chat-reply-bar";
 import { useChat } from "@/hooks/realtime-chat/use-chat";
+import { useMatrixSendMessage } from "@/features/chat/api/use-send-chat-messages";
 
 interface Props {
   chatId: string | null;
   currentUserId: string | null;
-  replyTo: MessageType | null;
-  onCancelReply: () => void;
+  // replyTo: MessageType | null;
+  // onCancelReply: () => void;
 }
 const ChatFooter = ({
   chatId,
   currentUserId,
-  replyTo,
-  onCancelReply,
+  // replyTo,
+  // onCancelReply,
 }: Props) => {
   const messageSchema = z.object({
     message: z.string().optional(),
   });
 
-  const { sendMessage, isSendingMsg } = useChat();
+  // const { sendMessage, isSendingMsg } = useChat();
+  const { sendMessage } = useMatrixSendMessage();
 
   const [image, setImage] = useState<string | null>(null);
   const imageInputRef = useRef<HTMLInputElement | null>(null);
@@ -58,21 +60,21 @@ const ChatFooter = ({
   };
 
   const onSubmit = (values: { message?: string }) => {
-    if (isSendingMsg) return;
+    // if (isSendingMsg) return;
     if (!values.message?.trim() && !image) {
       toast.error("Please enter a message or select an image");
       return;
     }
     const payload = {
-      chatId,
+      // chatId,
       content: values.message,
-      image: image || undefined,
-      replyTo: replyTo,
+      // image: image || undefined,
+      // replyTo: replyTo,
     };
     //Send Message
-    sendMessage(payload);
+    sendMessage(chatId,values.message);
 
-    onCancelReply();
+    // onCancelReply();
     handleRemoveImage();
     form.reset();
   };
@@ -84,7 +86,7 @@ const ChatFooter = ({
        bg-card border-t border-border py-4
       "
       >
-        {image && !isSendingMsg && (
+        {image && (
           <div className="max-w-6xl mx-auto px-8.5">
             <div className="relative w-fit">
               <img
@@ -119,7 +121,7 @@ const ChatFooter = ({
                 type="button"
                 variant="outline"
                 size="icon"
-                disabled={isSendingMsg}
+                // disabled={isSendingMsg}
                 className="rounded-full"
                 onClick={() => imageInputRef.current?.click()}
               >
@@ -129,7 +131,7 @@ const ChatFooter = ({
                 type="file"
                 className="hidden"
                 accept="image/*"
-                disabled={isSendingMsg}
+                // disabled={isSendingMsg}
                 ref={imageInputRef}
                 onChange={handleImageChange}
               />
@@ -137,7 +139,7 @@ const ChatFooter = ({
             <FormField
               control={form.control}
               name="message"
-              disabled={isSendingMsg}
+              // disabled={isSendingMsg}
               render={({ field }) => (
                 <FormItem className="flex-1">
                   <Input
@@ -154,7 +156,7 @@ const ChatFooter = ({
               type="submit"
               size="icon"
               className="rounded-lg"
-              disabled={isSendingMsg}
+              // disabled={isSendingMsg}
             >
               <Send className="h-3.5 w-3.5" />
             </Button>
@@ -162,15 +164,62 @@ const ChatFooter = ({
         </Form>
       </div>
 
-      {replyTo && !isSendingMsg && (
+      {/* {replyTo && !isSendingMsg && (
         <ChatReplyBar
           replyTo={replyTo}
           currentUserId={currentUserId}
           onCancel={onCancelReply}
         />
-      )}
+      )} */}
     </>
   );
 };
 
 export default ChatFooter;
+
+// "use client";
+
+// import { useState } from "react";
+// import { useMatrixSendMessage } from "@/features/chat/api/use-send-chat-messages";
+
+// interface Props {
+//   chatId: string | null;
+//   currentUserId: string | null;
+// }
+
+// const ChatFooter = ({ chatId }: Props) => {
+//   const [text, setText] = useState("");
+//   const { sendMessage } = useMatrixSendMessage();
+
+//   const handleSend = async () => {
+//     if (!chatId || !text.trim()) return;
+
+//     try {
+//       await sendMessage(chatId, text.trim());
+//       setText(""); // clear input
+//     } catch (err) {
+//       console.error("Matrix send error:", err);
+//     }
+//   };
+
+//   return (
+//     <div className="border-t border-border p-3">
+//       <div className="flex gap-2">
+//         <input
+//           className="flex-1 border rounded px-2 py-1"
+//           value={text}
+//           onChange={(e) => setText(e.target.value)}
+//           placeholder="Type your message…"
+//         />
+//         <button
+//           className="bg-primary text-white px-4 py-1 rounded"
+//           onClick={handleSend}
+//         >
+//           Send
+//         </button>
+//       </div>
+//     </div>
+//   );
+// };
+
+// export default ChatFooter;

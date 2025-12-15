@@ -6,22 +6,24 @@ import AvatarWithBadge from "../avatar-with-badge";
 import { formatChatTime } from "@/lib/realtime-chat/helper";
 import { Button } from "../ui/button";
 import { ReplyIcon } from "lucide-react";
+import { useGetCurrentUser } from "@/features/chat/api/use-get-current-info";
 
 interface Props {
   message: MessageType;
   onReply: (message: MessageType) => void;
 }
 const ChatMessageBody = memo(({ message, onReply }: Props) => {
-  const { user } = useAuth();
+  // const { user } = useAuth();
+  const {data:user} = useGetCurrentUser()
 
   const userId = user?._id || null;
   const isCurrentUser = message.sender?._id === userId;
   const senderName = isCurrentUser ? "You" : message.sender?.name;
 
-  const replySendername =
-    message.replyTo?.sender?._id === userId
-      ? "You"
-      : message.replyTo?.sender?.name;
+  // const replySendername =
+  //   message.replyTo?.sender?._id === userId
+  //     ? "You"
+  //     : message.replyTo?.sender?.name;
 
   const containerClass = cn(
     "group flex gap-2 py-3 px-4",
@@ -75,7 +77,7 @@ const ChatMessageBody = memo(({ message, onReply }: Props) => {
             </div>
 
             {/* ReplyToBox */}
-            {message.replyTo && (
+            {/* {message.replyTo && (
               <div className={replyBoxClass}>
                 <h5 className="font-medium">{replySendername}</h5>
                 <p
@@ -87,7 +89,7 @@ const ChatMessageBody = memo(({ message, onReply }: Props) => {
                     (message?.replyTo?.image ? "📷 Photo" : "")}
                 </p>
               </div>
-            )}
+            )} */}
 
             {message?.image && (
               <img
@@ -97,7 +99,7 @@ const ChatMessageBody = memo(({ message, onReply }: Props) => {
               />
             )}
 
-            {message.content && <p>{message.content}</p>}
+            {message.text && <p>{message.text}</p>}
           </div>
 
           {/* {Reply Icon Button} */}
@@ -135,3 +137,4 @@ const ChatMessageBody = memo(({ message, onReply }: Props) => {
 ChatMessageBody.displayName = "ChatMessageBody";
 
 export default ChatMessageBody;
+

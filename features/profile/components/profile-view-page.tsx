@@ -14,211 +14,230 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
-import { useUserProfile } from "@/features/profile/hook/useGetUser";
 import { Pencil, Save, Lock, X } from "lucide-react";
 import ChangePasswordDialog from "./ChangePasswordDialog";
 import { LoaderIcon } from "@/components/chat/icons";
-import { toast } from 'sonner';
+import { toast } from "sonner";
+
+import { useUserProfile } from "../hook/useGetUser";
+import { useUpdateProfile, UpdateProfileInput } from "../hook/useUpdateProfile";
+import { useUser } from "@/context/UserContext";
 
 const profileSchema = z.object({
+  username: z.string().min(1, "Username is required"),
   first_name: z.string().min(1, "First name is required"),
   last_name: z.string().min(1, "Last name is required"),
-  username: z.string().min(1, "Username is required"),
   email: z.string().email("Invalid email"),
-  phone_number: z.string().min(10, "Phone number is too short"),
+  age: z.number().min(0, "Invalid age"),
+  gender: z.string().min(1, "Gender is required"),
+  weight: z.number().min(0, "Invalid weight"),
+  height: z.number().min(0, "Invalid height"),
+  bmi: z.number().optional(),
+  bmi_category: z.string().optional(),
 });
 
 type ProfileForm = z.infer<typeof profileSchema>;
 
-const passwordSchema = z.object({
-  current_password: z.string().min(6, "Current password is required"),
-  new_password: z.string().min(6, "New password must be at least 6 characters"),
-});
-
-type PasswordForm = z.infer<typeof passwordSchema>;
+type FieldItem = {
+  label: string;
+  name: keyof ProfileForm;
+  type?: string;
+  readOnly?: boolean;
+};
 
 export default function ProfileViewPage() {
   const [isEditing, setIsEditing] = useState(false);
   const [showPasswordModal, setShowPasswordModal] = useState(false);
-  const { data: user, isLoading } = useUserProfile();
+
+  const { data: profile, isLoading: isProfileLoading } = useUserProfile();
+  const { mutate: updateProfile } = useUpdateProfile();
+  const { user } = useUser();
 
   const form = useForm<ProfileForm>({
     resolver: zodResolver(profileSchema),
     mode: "onChange",
     defaultValues: {
+      username: "",
       first_name: "",
       last_name: "",
-      username: "",
       email: "",
-      phone_number: "",
+      age: 0,
+      gender: "",
+      weight: 0,
+      height: 0,
+      bmi: undefined,
+      bmi_category: undefined,
     },
   });
 
-  const passwordForm = useForm<PasswordForm>({
-    resolver: zodResolver(passwordSchema),
-    mode: "onChange",
-  });
-
   useEffect(() => {
-    if (user) {
+    if (profile) {
       form.reset({
-        first_name: user.first_name,
-        last_name: user.last_name,
-        username: user.username,
-        email: user.email,
-        phone_number: user.phone_number,
+        username: profile.username || "",
+        first_name: profile.first_name || "",
+        last_name: profile.last_name || "",
+        email: profile.email || "",
+        age: profile.age ?? 0,
+        gender: profile.gender || "",
+        weight: profile.weight ?? 0,
+        height: profile.height ?? 0,
+        bmi: profile.bmi,
+        bmi_category: profile.bmi_category,
       });
     }
-  }, [user]);
+  }, [profile]);
 
   const onSubmit = (data: ProfileForm) => {
-    console.log("Profile form submitted:", data);
-    toast.success("Profile updated successfully!");
-    setIsEditing(false);
+    const updateData: UpdateProfileInput = {
+      first_name: data.first_name,
+      last_name: data.last_name,
+      email: data.email,
+      phone_number: user?.phone_number || "",
+      dob: profile?.dob || new Date().toISOString(),
+      gender: data.gender,
+      weight: data.weight,
+      height: data.height,
+    };
+
+    updateProfile(updateData, {
+      onSuccess: () => {
+        toast.success("Profile updated successfully!");
+        setIsEditing(false);
+      },
+      onError: () => {
+        toast.error("Failed to update profile.");
+      },
+    });
   };
 
-  const onChangePassword = (data: PasswordForm) => {
-    console.log("Password change submitted:", data);
-    toast.success("Password changed successfully!");
-    setShowPasswordModal(false);
-    passwordForm.reset();
-  };
-
-  const fields: {
-    label: string;
-    name: keyof ProfileForm;
-    type?: string;
-  }[] = [
-    { label: "First Name", name: "first_name" },
-    { label: "Last Name", name: "last_name" },
-    { label: "Username", name: "username" },
-    { label: "Email", name: "email", type: "email" },
-    { label: "Phone Number", name: "phone_number" },
-  ];
-
-  if (isLoading || !user) {
+  if (isProfileLoading) {
     return (
-      <div className="flex flex-col items-center justify-center py-10">
-        <span className="animate-spin w-10 h-10 text-blue-500 mb-4 flex items-center justify-center">
-          <LoaderIcon size={40} />
-        </span>
-        <span className="text-lg text-muted-foreground">Loading profile...</span>
+      <div className="flex justify-center items-center min-h-screen">
+        <LoaderIcon />
       </div>
     );
   }
 
+  const fields: FieldItem[] = [
+    { label: "First Name", name: "first_name" },
+    { label: "Last Name", name: "last_name" },
+    { label: "Username", name: "username" },
+    { label: "Email", name: "email", type: "email" },
+    { label: "Age", name: "age", type: "number" },
+    { label: "Gender", name: "gender" },
+    { label: "Weight (kg)", name: "weight", type: "number" },
+    { label: "Height (cm)", name: "height", type: "number" },
+  ];
+
   return (
     <>
-      <Card className="max-w-3xl mx-auto mt-16 rounded-2xl shadow-xl border border-gray-200 relative bg-white">
-        <div className="absolute -top-14 left-1/2 transform -translate-x-1/2">
-          <div className="rounded-full p-1 bg-white shadow-2xl ring-4 ring-white">
-            <Avatar className="w-28 h-28 rounded-full overflow-hidden">
-              <AvatarImage src="/avatar.jpg" alt="Avatar" />
-              <AvatarFallback className="text-xl font-bold">
-                {user.username.slice(0, 2).toUpperCase()}
-              </AvatarFallback>
-            </Avatar>
-          </div>
-        </div>
-
-        <CardHeader className="pt-20">
-          <CardTitle className="text-center text-3xl font-bold text-gray-800">
-            Account Settings
-          </CardTitle>
-        </CardHeader>
-
-        <CardContent>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="px-2 sm:px-6">
-            <h3 className="text-lg font-semibold text-gray-700 mb-4">
-              Personal Information
-            </h3>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
-              {fields.map(({ label, name, type }) => (
-                <div key={name} className="space-y-1.5">
-                  <Label htmlFor={name} className="text-sm text-gray-700 font-medium mb-1 block">
-                    {label}
-                  </Label>
-                  <Controller
-                    control={form.control}
-                    name={name}
-                    render={({ field }) => (
-                      <Input
-                        id={name}
-                        type={type || "text"}
-                        disabled={!isEditing}
-                        placeholder={label}
-                        {...field}
-                        className={cn(
-                          "rounded-lg px-4 py-2 transition w-full border shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500",
-                          !isEditing && "bg-gray-100 text-gray-500 cursor-not-allowed"
-                        )}
-                      />
-                    )}
-                  />
-                  {form.formState.errors[name] && (
-                    <span className="text-xs text-red-500">
-                      {form.formState.errors[name]?.message}
-                    </span>
-                  )}
-                </div>
-              ))}
+      <div className="w-full bg-gradient-to-b from-blue-50 to-white py-12 px-4 min-h-screen">
+        <Card className="max-w-3xl mx-auto rounded-2xl shadow-xl border border-blue-100 bg-white/80 backdrop-blur-xl relative">
+          <div className="absolute -top-16 left-1/2 -translate-x-1/2">
+            <div className="rounded-full p-1 bg-white shadow-xl ring-4 ring-blue-200">
+              <Avatar className="w-28 h-28 rounded-full">
+                <AvatarImage src="/avatar.jpg" alt="Avatar" />
+                <AvatarFallback className="text-xl font-bold bg-blue-100 text-blue-800">
+                  {profile?.username?.slice(0, 2).toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
             </div>
+          </div>
 
-            <div className="flex justify-center gap-4 mt-10 flex-wrap">
-              {isEditing ? (
-                <>
-                  <Button type="submit" className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-xl">
-                    <Save className="w-4 h-4 mr-2" /> Save
-                  </Button>
+          <CardHeader className="pt-20 text-center">
+            <CardTitle className="text-3xl font-bold text-blue-800">
+              Account Settings
+            </CardTitle>
+            <p className="text-gray-500">Manage your personal information</p>
+          </CardHeader>
+
+          <CardContent>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="px-4 sm:px-6">
+              <h3 className="text-lg font-semibold text-blue-700 mb-4">
+                Personal Information
+              </h3>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+                {fields.map(({ label, name, type, readOnly }) => (
+                  <div key={name} className="space-y-1.5">
+                    <Label className="text-sm text-blue-800 font-medium">{label}</Label>
+
+                    <Controller
+                      control={form.control}
+                      name={name}
+                      render={({ field }) => (
+                        <Input
+                          {...field}
+                          type={type || "text"}
+                          // disabled={!isEditing || readOnly ?? false}
+                          className={cn(
+                            "rounded-xl px-4 py-2 shadow-sm transition border-blue-200 focus:ring-2 focus:ring-blue-500",
+                            (!isEditing || readOnly) && "bg-blue-50 text-gray-500 cursor-not-allowed"
+                          )}
+                        />
+                      )}
+                    />
+
+                    {form.formState.errors[name] && (
+                      <p className="text-xs text-red-500">
+                        {form.formState.errors[name]?.message}
+                      </p>
+                    )}
+                  </div>
+                ))}
+              </div>
+
+              <div className="flex justify-center gap-4 mt-10 flex-wrap">
+                {isEditing ? (
+                  <>
+                    <Button
+                      type="submit"
+                      className="bg-blue-600 hover:bg-blue-700 text-white rounded-xl px-6 py-2 flex items-center"
+                    >
+                      <Save className="w-4 h-4 mr-2" />
+                      Save
+                    </Button>
+
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="rounded-xl px-6 py-2 border-blue-500 text-blue-600"
+                      onClick={() => {
+                        setIsEditing(false);
+                        form.reset(profile);
+                      }}
+                    >
+                      <X className="w-4 h-4 mr-2" /> Cancel
+                    </Button>
+                  </>
+                ) : (
                   <Button
                     type="button"
-                    variant="outline"
-                    onClick={() => setIsEditing(false)}
-                    className="px-6 py-2 rounded-xl"
+                    className="bg-blue-600 hover:bg-blue-700 text-white rounded-xl px-6 py-2"
+                    onClick={() => setIsEditing(true)}
                   >
-                    <X className="w-4 h-4 mr-2" /> Cancel
+                    <Pencil className="w-4 h-4 mr-2" /> Edit Profile
                   </Button>
-                </>
-              ) : (
+                )}
+
                 <Button
                   type="button"
-                  onClick={() => setIsEditing(true)}
-                  className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-xl"
+                  variant="secondary"
+                  onClick={() => setShowPasswordModal(true)}
+                  className="rounded-xl px-6 py-2 bg-blue-100 text-blue-700 hover:bg-blue-200"
                 >
-                  <Pencil className="w-4 h-4 mr-2" /> Edit Profile
+                  <Lock className="w-4 h-4 mr-2" /> Reset Password
                 </Button>
-              )}
+              </div>
+            </form>
+          </CardContent>
+        </Card>
+      </div>
 
-              <Button
-                type="button"
-                variant="secondary"
-                onClick={() => setShowPasswordModal(true)}
-                className="px-6 py-2 rounded-xl"
-              >
-                <Lock className="w-4 h-4 mr-2" /> Reset Password
-              </Button>
-            </div>
-          </form>
-        </CardContent>
-      </Card>
-
-      {/* Modal تغییر رمز */}
       <ChangePasswordDialog
         open={showPasswordModal}
         onClose={() => setShowPasswordModal(false)}
-        onSubmit={(data) => {
-          console.log("Password change submitted:", data);
-          setShowPasswordModal(false);
-        }}
       />
     </>
   );

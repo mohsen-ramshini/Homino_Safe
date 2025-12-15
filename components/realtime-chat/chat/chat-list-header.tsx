@@ -5,16 +5,19 @@ import {
   InputGroupInput,
 } from "../ui/input-group";
 import { NewChatPopover } from "./newchat-popover";
+import { useUser } from "@/context/UserContext";
 
 const ChatListHeader = ({ onSearch }: { onSearch: (val: string) => void }) => {
+  const { user } = useUser();
   return (
     <div className="px-3 py-3 border-b border-border">
       <div className="flex items-center justify-between mb-3">
         <h1 className="text-xl font-semibold">Chat</h1>
-        <div>
-          {/* NewChatPopover */}
-          <NewChatPopover />
-        </div>
+        {(user?.role === "admin" || user?.role === "doctor") && (
+          <div className="flex items-center gap-2">
+            <NewChatPopover />
+          </div>
+        )}
       </div>
       <div>
         <InputGroup className="bg-background text-sm">

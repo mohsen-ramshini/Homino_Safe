@@ -1,9 +1,10 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useUpdateUser } from "../../api/use-update-user";
 import { useGetCurrentUser } from "../../api/use-get-user-by-id";
+import { Eye, EyeOff } from "lucide-react";
 
 
 const relationships = [
@@ -41,6 +42,7 @@ interface UpdatePatientFormProps {
 
 const UpdatePatientForm: React.FC<UpdatePatientFormProps> = ({ id, onSuccess , OpenModal }) => {
   const { data: user } = useGetCurrentUser(String(id));
+    const [showPassword, setShowPassword] = useState(false);
   const mutation = useUpdateUser("doctor");
 
   const {
@@ -71,54 +73,70 @@ const UpdatePatientForm: React.FC<UpdatePatientFormProps> = ({ id, onSuccess , O
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-5 max-w-md mx-auto p-4 bg-white rounded shadow">
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-5 max-w-md mx-auto p-4">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Username */}
         <div>
-          <label className="block text-sm font-medium">Username</label>
-          <input {...register("username")} className="border rounded px-2 py-1 w-full" />
+          <label className="block text-sm font-medium mb-1">Username</label>
+          <input {...register("username")} className="border rounded-lg px-3 py-2 w-full" />
           {errors.username && <span className="text-red-500 text-xs">{errors.username.message}</span>}
         </div>
 
         {/* Password */}
-        <div>
-          <label className="block text-sm font-medium">Password</label>
-          <input type="password" {...register("password")} className="border rounded px-2 py-1 w-full" />
-          {errors.password && <span className="text-red-500 text-xs">{errors.password.message}</span>}
+        <div className="relative">
+          <label className="block text-sm font-medium mb-1">Password</label>
+          <div className="flex w-full">
+            <input
+              type={showPassword ? "text" : "password"}
+              {...register("password")}
+              placeholder="Enter New password"
+              className="border rounded-lg px-3 py-2 w-full pr-10 focus:outline-none focus:ring-2 focus:ring-blue-300 focus:border-blue-500"
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="relative -left-2 top-5 -ml-5 transform -translate-y-1/2 text-gray-500"
+            >
+              {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+            </button>
+          </div>
+          {errors.password && (
+            <span className="text-red-500 text-xs mt-1 block">{errors.password.message}</span>
+          )}
         </div>
 
         {/* Email */}
         <div>
-          <label className="block text-sm font-medium">Email</label>
-          <input type="email" {...register("email")} className="border rounded px-2 py-1 w-full" />
+          <label className="block text-sm font-medium mb-1">Email</label>
+          <input type="email" {...register("email")} className="border rounded-lg px-2 py-2 w-full" />
           {errors.email && <span className="text-red-500 text-xs">{errors.email.message}</span>}
         </div>
 
         {/* Phone Number */}
         <div>
-          <label className="block text-sm font-medium">Phone Number</label>
-          <input {...register("phone_number")} className="border rounded px-2 py-1 w-full" />
+          <label className="block text-sm font-medium mb-1">Phone Number</label>
+          <input {...register("phone_number")} className="border rounded-lg px-2 py-2 w-full" />
           {errors.phone_number && <span className="text-red-500 text-xs">{errors.phone_number.message}</span>}
         </div>
 
         {/* First Name */}
         <div>
-          <label className="block text-sm font-medium">First Name</label>
-          <input {...register("first_name")} className="border rounded px-2 py-1 w-full" />
+          <label className="block text-sm font-medium mb-1">First Name</label>
+          <input {...register("first_name")} className="border rounded-lg px-2 py-2 w-full" />
           {errors.first_name && <span className="text-red-500 text-xs">{errors.first_name.message}</span>}
         </div>
 
         {/* Last Name */}
         <div>
-          <label className="block text-sm font-medium">Last Name</label>
-          <input {...register("last_name")} className="border rounded px-2 py-1 w-full" />
+          <label className="block text-sm font-medium mb-1">Last Name</label>
+          <input {...register("last_name")} className="border rounded-lg px-2 py-2 w-full" />
           {errors.last_name && <span className="text-red-500 text-xs">{errors.last_name.message}</span>}
         </div>
 
         {/* Status */}
         <div>
-          <label className="block text-sm font-medium">Status</label>
-          <select {...register("status")} className="border rounded px-2 py-1 w-full">
+          <label className="block text-sm font-medium mb-1">Status</label>
+          <select {...register("status")} className="border rounded-lg px-2 py-2 w-full">
             <option value="active">Active</option>
             <option value="inactive">Inactive</option>
           </select>
@@ -127,8 +145,8 @@ const UpdatePatientForm: React.FC<UpdatePatientFormProps> = ({ id, onSuccess , O
 
         {/* Specialization */}
         <div>
-          <label className="block text-sm font-medium">Specialization</label>
-          <input {...register("specialization")} className="border rounded px-2 py-1 w-full" />
+          <label className="block text-sm font-medium mb-1">Specialization</label>
+          <input {...register("specialization")} className="border rounded-lg px-2 py-2 w-full" />
           {errors.specialization && <span className="text-red-500 text-xs">{errors.specialization.message}</span>}
         </div>
       </div>
@@ -137,7 +155,7 @@ const UpdatePatientForm: React.FC<UpdatePatientFormProps> = ({ id, onSuccess , O
 
       <button
         type="submit"
-        className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded w-full font-semibold transition"
+        className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl w-full font-semibold transition"
       >
         Update Doctor
       </button>
