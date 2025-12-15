@@ -164,8 +164,8 @@ export function LoginForm({ onSubmit, className }: LoginFormProps) {
                 Don’t have an account?{" "}
                 <button
                   type="button"
-                  onClick={() => router.push("/auth/sign-up")}
-                  className="font-medium underline underline-offset-4"
+                  onClick={() => router.push("/sign-up")}
+                  className="font-medium underline underline-offset-4 cursor-pointer"
                 >
                   Sign up
                 </button>

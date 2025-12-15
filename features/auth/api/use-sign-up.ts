@@ -5,12 +5,12 @@ import { SignUpFormValues, SignupResponse } from '../types/auth';
 // import { toast } from 'sonner';
 
 export const useSignup = () => {
-  return useMutation<SignupResponse, AxiosError, SignUpFormValues & { assigned_patients: number[] }>({
+  return useMutation<SignupResponse, AxiosError, SignUpFormValues>({
     mutationFn: async (data) => {
       console.log("📤 Sending signup data as JSON:", data);
 
       const response = await axiosInstance.post<SignupResponse>(
-        '/register/caregiver',
+        '/register',
         data,
         {
           headers: {
@@ -31,7 +31,6 @@ export const useSignup = () => {
         document.cookie = `access_token=${data.access}; path=/`;
         document.cookie = `refresh_token=${data.refresh}; path=/`;
       }
-      window.location.href = '/auth/sign-in';
     },
 
     onError: (error) => {
