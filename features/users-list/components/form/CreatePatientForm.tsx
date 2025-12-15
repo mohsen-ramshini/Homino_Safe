@@ -39,7 +39,7 @@ const schema = z.object({
   ),
 });
 
-type PatientFormValues = z.infer<typeof schema>;
+export type PatientFormValues = z.infer<typeof schema>;
 
 interface Props {
   setOpen: (open: boolean) => void;

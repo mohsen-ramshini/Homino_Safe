@@ -10,9 +10,9 @@ export type SignUpFormValues = {
   phone_number: string,
   first_name: string,
   last_name: string,
-  role: "caregiver",
-  relationship_to_user: string,
-  assigned_patients?: number[]
+  role: string,
+  // relationship_to_user: string,
+  // assigned_patients?: number[]
 }
 
 export type LoginFormProps = {

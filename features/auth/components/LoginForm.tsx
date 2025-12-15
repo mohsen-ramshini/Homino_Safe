@@ -5,10 +5,10 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Eye, EyeOff, GalleryVerticalEnd } from "lucide-react";
-
+import { Eye, EyeOff } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import {
   Field,
   FieldDescription,
@@ -17,152 +17,184 @@ import {
   FieldSeparator,
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
+// import {BackgroundImage} from "/assets/images/bg-auth"
 
-// ======================
-// Zod Schema
-// ======================
 import { z } from "zod";
+import Image from "next/image";
 
-export const loginSchema = z.object({
+// ======================
+// Schema
+// ======================
+const loginSchema = z.object({
   username: z.string().min(3, "Username must be at least 3 characters"),
   password: z.string().min(4, "Password must be at least 4 characters"),
 });
 
-export type LoginFormValues = z.infer<typeof loginSchema>;
+type LoginFormValues = z.infer<typeof loginSchema>;
 
-export type LoginFormProps = {
+type LoginFormProps = {
   onSubmit: (values: LoginFormValues) => void;
   className?: string;
 };
 
 // ======================
-// LoginForm Component
+// Component
 // ======================
-export const LoginForm: React.FC<LoginFormProps> = ({ onSubmit, className }) => {
+export function LoginForm({ onSubmit, className }: LoginFormProps) {
   const router = useRouter();
-  const form = useForm<LoginFormValues>({
-    resolver: zodResolver(loginSchema),
-    defaultValues: { username: "", password: "" },
-  });
-
   const [showPassword, setShowPassword] = useState(false);
 
+  const form = useForm<LoginFormValues>({
+    resolver: zodResolver(loginSchema),
+    defaultValues: {
+      username: "",
+      password: "",
+    },
+  });
+
   return (
-    <div className={cn("flex flex-col gap-6", className)}>
-      <form onSubmit={form.handleSubmit(onSubmit)}>
-        <FieldGroup>
-          {/* Header */}
-          <div className="flex flex-col items-center gap-2 text-center">
-            <a href="#" className="flex flex-col items-center gap-2 font-medium">
-              <div className="flex h-8 w-8 items-center justify-center rounded-md bg-gray-200 dark:bg-zinc-700">
-                <GalleryVerticalEnd className="h-6 w-6" />
-              </div>
-              <span className="sr-only">Acme Inc.</span>
-            </a>
-            <h1 className="text-xl font-bold text-primary dark:text-white">
-              Sign In to Your Account
-            </h1>
-            <FieldDescription>
-              Don&apos;t have an account?{" "}
-              <a
-                href="#"
-                onClick={(e) => {
-                  e.preventDefault();
-                  router.push("/auth/sign-up");
-                }}
-                className="text-blue-600 dark:text-blue-400 hover:underline"
-              >
-                Sign up
-              </a>
-            </FieldDescription>
-          </div>
-
-          {/* Username Field */}
-          <Field>
-            <FieldLabel htmlFor="username">Username</FieldLabel>
-            <Input
-              id="username"
-              type="text"
-              placeholder="Enter your username"
-              {...form.register("username")}
-              dir="ltr"
-            />
-            {form.formState.errors.username && (
-              <p className="text-sm text-red-500 mt-1">
-                {form.formState.errors.username.message}
-              </p>
-            )}
-          </Field>
-
-          {/* Password Field */}
-          <Field>
-            <FieldLabel htmlFor="password">Password</FieldLabel>
-            <div className="relative">
-              <Input
-                id="password"
-                type={showPassword ? "text" : "password"}
-                placeholder="Enter your password"
-                {...form.register("password")}
-                dir="ltr"
-              />
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute inset-y-0 right-2 flex items-center px-2 text-gray-600 dark:text-gray-400"
-                tabIndex={-1}
-              >
-                {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-              </button>
-            </div>
-            {form.formState.errors.password && (
-              <p className="text-sm text-red-500 mt-1">
-                {form.formState.errors.password.message}
-              </p>
-            )}
-          </Field>
-
-          {/* Forgot Password */}
-          <Link
-            href="/forget-password"
-            className="block text-sm text-blue-600 dark:text-blue-400 hover:underline"
+    <div className={cn("flex flex-col gap-8", className)}>
+      <div className="overflow-hidden rounded-3xl">
+        <CardContent className="grid p-0 md:grid-cols-2">
+          {/* فرم */}
+          <form
+            onSubmit={form.handleSubmit(onSubmit)}
+            className="p-8 md:p-10"
           >
-            Forgot your password?
-          </Link>
+            <FieldGroup className="gap-6">
+              {/* Header */}
+              <div className="flex flex-col items-center gap-3 text-center">
+                <h1 className="text-2xl md:text-3xl font-semibold tracking-tight">
+                  Sign in to your account
+                </h1>
+                <p className="text-sm md:text-base text-muted-foreground leading-relaxed">
+                  Enter your username and password
+                </p>
+              </div>
 
-          {/* Submit Button */}
-          <Field>
-            <Button type="submit" className="w-full">
-              Sign In
-            </Button>
-          </Field>
+              {/* Username */}
+              <Field className="gap-1.5">
+                <FieldLabel className="text-sm font-medium">
+                  Username
+                </FieldLabel>
+                <Input
+                  className="h-11 px-4 text-sm"
+                  placeholder="Enter your username"
+                  {...form.register("username")}
+                  dir="ltr"
+                />
+                {form.formState.errors.username && (
+                  <p className="text-xs text-destructive">
+                    {form.formState.errors.username.message}
+                  </p>
+                )}
+              </Field>
 
-          {/* Separator */}
-          <FieldSeparator>Or continue with</FieldSeparator>
+              {/* Password */}
+              <Field className="gap-1.5">
+                <FieldLabel className="text-sm font-medium">
+                  Password
+                </FieldLabel>
+                <div className="relative">
+                  <Input
+                    className="h-11 px-4 pr-10 text-sm"
+                    placeholder="Enter your password"
+                    type={showPassword ? "text" : "password"}
+                    {...form.register("password")}
+                    dir="ltr"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword((p) => !p)}
+                    className="absolute inset-y-0 right-3 flex items-center text-muted-foreground"
+                    tabIndex={-1}
+                  >
+                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
+                </div>
+                {form.formState.errors.password && (
+                  <p className="text-xs text-destructive">
+                    {form.formState.errors.password.message}
+                  </p>
+                )}
+              </Field>
 
-          {/* Social Buttons */}
-          <Field className="grid gap-4 sm:grid-cols-2">
-            <Button variant="outline" type="button">
-              Continue with Apple
-            </Button>
-            <Button variant="outline" type="button">
-              Continue with Google
-            </Button>
-          </Field>
-        </FieldGroup>
-      </form>
+              {/* Forgot password */}
+              <div className="text-right">
+                <Link
+                  href="/forget-password"
+                  className="text-sm font-medium text-muted-foreground hover:text-foreground hover:underline transition"
+                >
+                  Forgot password?
+                </Link>
+              </div>
 
-      {/* Footer */}
-      <FieldDescription className="px-6 text-center">
+              {/* Submit */}
+              <Field>
+                <Button className="h-11 w-full text-sm font-medium">
+                  Sign In
+                </Button>
+              </Field>
+
+              {/* Separator */}
+              <FieldSeparator className="text-xs text-muted-foreground">
+                Or continue with
+              </FieldSeparator>
+
+              {/* Social */}
+              <Field className="grid grid-cols-2 gap-3">
+                <Button
+                  variant="outline"
+                  className="h-11 text-sm font-medium"
+                  type="button"
+                >
+                  Apple
+                </Button>
+                <Button
+                  variant="outline"
+                  className="h-11 text-sm font-medium"
+                  type="button"
+                >
+                  Google
+                </Button>
+              </Field>
+
+              {/* Footer */}
+              <FieldDescription className="text-center text-sm">
+                Don’t have an account?{" "}
+                <button
+                  type="button"
+                  onClick={() => router.push("/sign-up")}
+                  className="font-medium underline underline-offset-4 cursor-pointer"
+                >
+                  Sign up
+                </button>
+              </FieldDescription>
+            </FieldGroup>
+          </form>
+
+          {/* Image */}
+          <div className="bg-muted relative hidden md:block">
+            <img
+              src="/assets/images/bg-auth.jpg"
+              alt="Login visual"
+              className="absolute inset-0 h-full w-full object-cover"
+            />
+          </div>
+        </CardContent>
+      </div>
+
+      {/* Terms */}
+      <FieldDescription className="px-6 text-center text-xs leading-relaxed">
         By clicking continue, you agree to our{" "}
-        <a href="#" className="underline">
+        <a href="#" className="underline underline-offset-4">
           Terms of Service
         </a>{" "}
         and{" "}
-        <a href="#" className="underline">
+        <a href="#" className="underline underline-offset-4">
           Privacy Policy
-        </a>
-        .
+        </a>.
       </FieldDescription>
     </div>
   );
-};
+}
