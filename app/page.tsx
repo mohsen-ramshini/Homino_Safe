@@ -17,9 +17,9 @@ export default function Page() {
     }
   }, [user, router]);
 
-  return (
-    <>
-      <Toaster richColors position="top-center" />
-    </>
-  );
+  // return (
+  //   <>
+  //     <Toaster richColors position="top-center" />
+  //   </>
+  // );
 }
