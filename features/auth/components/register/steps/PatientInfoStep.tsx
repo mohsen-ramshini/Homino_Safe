@@ -1,153 +1,308 @@
 "use client";
 
-import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from "@/components/ui/select";
 import { ChevronRightIcon } from "lucide-react";
-import { useSignup } from "../../../api/use-sign-up"; // مسیر هوک خودت را درست وارد کن
+import { toast } from "sonner";
+import { useSignup } from "../../../api/use-sign-up";
+import { Eye, EyeOff } from "lucide-react";
+import { useState } from "react";
 
-export type PatientFormValues = {
-  username: string;
-  password: string;
-  email: string;
-  phone_number: string;
-  first_name: string;
-  last_name: string;
-  role: string; // همیشه "patient"
-  national_code: string;
-  dob: string; // تاریخ تولد به فرمت YYYY-MM-DD
-  gender: string;
-  weight: number;
-  height: number;
-  caregiver_id?: number; // اختیاری، رندر نمی‌شود
-  doctor_id?: number; // اختیاری، رندر نمی‌شود
-};
+
+/* =========================
+   ZOD SCHEMA
+========================= */
+export const patientSchema = z.object({
+  first_name: z.string().min(2, "First name must be at least 2 characters"),
+  last_name: z.string().min(2, "Last name must be at least 2 characters"),
+  username: z.string().min(3, "Username must be at least 3 characters"),
+  email: z.string().email("Invalid email address"),
+  phone_number: z
+    .string()
+    .regex(/^09\d{9}$/, "Invalid phone number"),
+  password: z.string().min(8, "Password must be at least 8 characters"),
+  national_code: z
+    .string()
+    .length(10, "National code must be exactly 10 digits"),
+  dob: z.string().min(1, "Date of birth is required"),
+  gender: z.enum(["Male", "Female"]),
+  weight: z.number().min(1, "Weight must be greater than 0"),
+  height: z.number().min(1, "Height must be greater than 0"),
+
+  role: z.literal("patient"),
+  caregiver_id: z.number().optional(),
+  doctor_id: z.number().optional(),
+});
+
+export type PatientFormValues = z.infer<typeof patientSchema>;
 
 interface Props {
-  onContinue: (data: any) => void;
-  onPrevious?: () => void;
+  onContinue: (step: string) => void;
+  setUserInfo: (data: object)=> void;
 }
 
-export const PatientInfoStep = ({onContinue}: Props) => {
+/* =========================
+   COMPONENT
+========================= */
+export const PatientInfoStep = ({ onContinue, setUserInfo }: Props) => {
+  const [showPassword, setShowPassword] = useState(false);
+
   const router = useRouter();
   const signupMutation = useSignup();
 
-  const [formData, setFormData] = useState<PatientFormValues>({
-    username: "",
-    password: "",
-    email: "",
-    phone_number: "",
-    first_name: "",
-    last_name: "",
-    role: "patient",
-    national_code: "",
-    dob: "",
-    gender: "Male",
-    weight: 1,
-    height: 1,
-    caregiver_id: undefined,
-    doctor_id: undefined,
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    formState: { errors, isSubmitting, isValid },
+  } = useForm<PatientFormValues>({
+    resolver: zodResolver(patientSchema),
+     mode: "onChange",
+    defaultValues: {
+      first_name: "",
+      last_name: "",
+      username: "",
+      email: "",
+      phone_number: "",
+      password: "",
+      national_code: "",
+      dob: "",
+      gender: "Male",
+      weight: null,
+      height: null,
+      role: "patient",
+    },
   });
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: ["weight", "height"].includes(name) ? Number(value) : value,
-    }));
-  };
+const onSubmit = (data: PatientFormValues) => {
+  signupMutation.mutate(data, {
+    onSuccess: (response) => {
 
-  const handleContinue = () => {
-    signupMutation.mutate(formData);
-    onContinue("patient-info")
-  };
+      console.log("response",response);
+      
+
+      setUserInfo(response);
+      onContinue("patient-info");
+    },
+    onError: (error: any) => {
+      toast.error(
+        error?.response?.data?.detail?.[0]?.msg ?? "Signup failed"
+      );
+    },
+  });
+};
+
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-8 text-[#3b3a36]">
-      <div className="w-full max-w-5xl dark:bg-zinc-900 rounded-2xl p-8 md:p-10 overflow-auto">
+    <div className="min-h-screen flex items-center justify-center p-8">
+      <div className="w-full max-w-5xl rounded-2xl p-8 md:p-10 dark:bg-zinc-900">
         <div className="mb-8 text-center">
           <h1 className="text-3xl font-semibold mb-2">Patient Information</h1>
-          <p className="text-gray-600 text-base leading-relaxed">
-            Please fill out the patient information carefully so the system can create an accurate profile.
+          <p className="text-gray-500">
+            Please fill in the patient information carefully
           </p>
         </div>
 
-        <form className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {[
-            "first_name",
-            "last_name",
-            "username",
-            "email",
-            "phone_number",
-            "password",
-            "national_code",
-            "dob",
-            "weight",
-            "height",
-          ].map((field) => {
-            let type: string = "text";
-            let label = field.replace("_", " ").replace(/\b\w/g, c => c.toUpperCase());
+      <form
+        onSubmit={handleSubmit(onSubmit)}
+        className="grid grid-cols-1 md:grid-cols-3 gap-6"
+      >
+        <Field label="First Name" error={errors.first_name?.message}>
+          <Input
+            {...register("first_name")}
+            placeholder="Enter your first name"
+            className="w-full px-4 py-2"
+          />
+        </Field>
 
-            if (field === "password") type = "password";
-            if (field === "dob") {
-              type = "date";
-              label = "Date of Birth";
-            }
-            if (["weight", "height"].includes(field)) type = "number";
+        <Field label="Last Name" error={errors.last_name?.message}>
+          <Input
+            {...register("last_name")}
+            placeholder="Enter your last name"
+            className="w-full px-4 py-2"
+          />
+        </Field>
 
-            return (
-              <div key={field} className="flex flex-col">
-                <label className="text-sm font-medium mb-1">{label}</label>
-                <Input
-                  name={field}
-                  type={type}
-                  value={(formData as any)[field]}
-                  onChange={handleChange}
-                  placeholder={label}
-                />
-              </div>
-            );
-          })}
+        <Field label="Username" error={errors.username?.message}>
+          <Input
+            {...register("username")}
+            placeholder="Choose a username"
+            className="w-full px-4 py-2"
+          />
+        </Field>
 
-          {/* Gender select */}
-          <div className="flex flex-col">
-            <label className="text-sm font-medium mb-1">Gender</label>
+        <Field label="Email" error={errors.email?.message}>
+          <Input
+            type="email"
+            {...register("email")}
+            placeholder="Enter your email"
+            className="w-full px-4 py-2"
+          />
+        </Field>
+
+        <Field label="Phone Number" error={errors.phone_number?.message}>
+          <Input
+            {...register("phone_number")}
+            placeholder="09xxxxxxxxx"
+            className="w-full px-4 py-2"
+          />
+        </Field>
+
+      <Field label="Password" error={errors.password?.message}>
+        <div className="relative w-full">
+          <Input
+            type={showPassword ? "text" : "password"}
+            {...register("password")}
+            placeholder="Enter a secure password"
+            className="w-full px-4 py-2 pr-10"
+          />
+
+          <button
+            type="button"
+            onClick={() => setShowPassword((prev) => !prev)}
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+            tabIndex={-1}
+          >
+            {showPassword ? (
+              <EyeOff className="w-5 h-5" />
+            ) : (
+              <Eye className="w-5 h-5" />
+            )}
+          </button>
+        </div>
+      </Field>
+
+
+          <Field label="National Code" error={errors.national_code?.message}>
+            <Input
+              type="text"
+              {...register("national_code", {
+                validate: (val) =>
+                  /^\d+$/.test(val) || "National code must be a number",
+                maxLength: 10,
+                minLength: 10,
+                setValueAs: (v) => (v === "" ? undefined : v),
+              })}
+              placeholder="Enter your national code"
+              className="w-full px-4 py-2"
+              onKeyDown={(e) => {
+                if (
+                  !/[0-9]/.test(e.key) &&
+                  e.key !== "Backspace" &&
+                  e.key !== "ArrowLeft" &&
+                  e.key !== "ArrowRight" &&
+                  e.key !== "Tab"
+                ) {
+                  e.preventDefault();
+                }
+              }}
+            />
+          </Field>
+
+<Field label="Date of Birth" error={errors.dob?.message}>
+  <Input
+    type="date"
+    {...register("dob")}
+    placeholder="Select your birth date"
+    className="w-full block px-4 py-2"
+    style={{ width: "100%", boxSizing: "border-box" }}
+  />
+</Field>
+
+
+<Field label="Weight (kg)" error={errors.weight?.message}>
+  <Input
+    type="number"
+    {...register("weight", {
+      valueAsNumber: true,
+      validate: (val) =>
+        typeof val === "number" && val > 0 || "Weight must be a positive number",
+    })}
+    placeholder="Enter your weight"
+    className="w-full px-4 py-2"
+  />
+</Field>
+
+<Field label="Height (cm)" error={errors.height?.message}>
+  <Input
+    type="number"
+    {...register("height", {
+      valueAsNumber: true,
+      validate: (val) =>
+        typeof val === "number" && val > 0 || "Height must be a positive number",
+    })}
+    placeholder="Enter your height"
+    className="w-full px-4 py-2"
+  />
+</Field>
+
+          <Field label="Gender" error={errors.gender?.message}>
             <Select
-              value={formData.gender}
-              onValueChange={(val) => setFormData((prev) => ({ ...prev, gender: val }))}
+              defaultValue=""
+              onValueChange={(val) => setValue("gender", val as "Male" | "Female")}
             >
-              <SelectTrigger>
-                <SelectValue placeholder="Select gender" />
+              <SelectTrigger className="w-full px-4 py-2">
+                <SelectValue placeholder="Select Your Gender" />
               </SelectTrigger>
-              <SelectContent className="bg-white dark:bg-zinc-900 z-50">
+              <SelectContent>
                 <SelectItem value="Male">Male</SelectItem>
                 <SelectItem value="Female">Female</SelectItem>
               </SelectContent>
             </Select>
-          </div>
-        </form>
-
-        <div className="mt-6 flex justify-between">
+          </Field>
+        <div className="md:col-span-3 flex justify-between mt-6">
           <Button
+            type="button"
             variant="ghost"
             onClick={() => router.push("/auth/sign-in")}
-            className="text-gray-600 dark:text-gray-400 hover:underline"
           >
             Back to Sign In
           </Button>
 
           <Button
+            type="submit"
             size="lg"
-            onClick={handleContinue}
-            className="bg-[#8a7f63] text-white flex items-center gap-2"
-
+            disabled={!isValid || isSubmitting}
+            className="flex items-center gap-2"
           >
-                Continue <ChevronRightIcon className="h-5 w-5" />
+            Continue <ChevronRightIcon className="w-5 h-5" />
           </Button>
         </div>
+      </form>
+
       </div>
     </div>
   );
 };
+
+/* =========================
+   FIELD WRAPPER
+========================= */
+const Field = ({
+  label,
+  error,
+  children,
+}: {
+  label: string;
+  error?: string;
+  children: React.ReactNode;
+}) => (
+  <div className="flex flex-col w-full">
+    <label className="text-sm font-medium mb-1">{label}</label>
+    <div>{children}</div>
+    <div className="text-xs text-red-500 mt-1 min-h-[24px] break-words">
+      {error ?? "\u00A0"}
+    </div>
+  </div>
+);

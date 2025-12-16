@@ -4,15 +4,15 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 
 interface Props {
-  status: "success" | "failed";
+  status: boolean;
 }
 
 export const SuccessStep = ({ status }: Props) => {
   const router = useRouter();
 
-  const title = status === "success" ? "Registration Completed" : "Registration Failed";
+  const title = status ? "Registration Completed" : "Registration Failed";
   const message =
-    status === "success"
+    status
       ? "Patient information has been successfully saved!"
       : "There was an error saving the patient information. Please try again.";
 
