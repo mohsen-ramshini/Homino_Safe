@@ -1,21 +1,172 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import {
-  Tabs,
-  TabsList,
-  TabsTrigger,
-} from "@/components/ui/tabs";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { SummarySection, SectionType } from "./SummarySection";
 import { useSummary } from "../../api/patient/useGetSummary";
 import { useUser } from "@/context/UserContext";
 import { useRecommendation } from "../../api/patient/useGetRecommen";
 import { RecommendSection } from "./RecommendSection";
 import { Card } from "@/components/ui/card";
+import { useGetOVerview } from "../../api/patient/useGetOverview";
 
-const AUTO_ROTATE_DELAY = 60000; // 1 دقیقه برای توقف خودکار
+const AUTO_ROTATE_DELAY = 60000;
 
 type TabType = "overview" | "recommendation" | "risk";
+
+const mockRisk = {
+  user_id: 4,
+  last_updated: "2026-01-13T05:10:28.866975Z",
+  kpis: {
+    heart_rate: {
+      value: 50.7,
+      trend: "decreasing",
+      average_last_24h: 69.86666666666669,
+      average_last_7d: 75.68113617059578,
+      unit: "bpm",
+    },
+    bp_systolic: {
+      value: 111.3,
+      trend: "stable",
+      average_last_24h: 118.6729166666667,
+      average_last_7d: 122.69951923076923,
+      unit: "mmHg",
+    },
+    bp_diastolic: {
+      value: 80.1,
+      trend: "stable",
+      average_last_24h: 79.37083333333332,
+      average_last_7d: 79.09615384615375,
+      unit: "mmHg",
+    },
+    spo2: {
+      value: 94.9,
+      trend: "stable",
+      average_last_24h: 94.56249999999999,
+      average_last_7d: 94.55128205128199,
+      unit: "%",
+    },
+    temperature: {
+      value: null,
+      trend: "not_enough_data",
+      average_last_24h: null,
+      average_last_7d: null,
+      unit: "°C",
+    },
+    body_temperature: {
+      value: 37.0,
+      trend: "stable",
+      average_last_24h: 37.108333333333334,
+      average_last_7d: 37.094871794871764,
+      unit: "°C",
+    },
+    humidity: {
+      value: null,
+      trend: "not_enough_data",
+      average_last_24h: null,
+      average_last_7d: null,
+      unit: "%",
+    },
+    mq2: {
+      value: null,
+      trend: "not_enough_data",
+      average_last_24h: null,
+      average_last_7d: null,
+      unit: "µg/m³",
+    },
+    CO2: {
+      value: null,
+      trend: "not_enough_data",
+      average_last_24h: null,
+      average_last_7d: null,
+      unit: "ppm",
+    },
+  },
+  recent_alerts: [
+    {
+      id: 1,
+      time: "2026-01-11T11:40:41.717730Z",
+      alert_type: "Fall Risk / Hypotension",
+      message:
+        "Fall risk increased due to overnight hypotension (SBP 110). Recommendation: supervised ambulation.",
+      severity: "High",
+    },
+    {
+      id: 2,
+      time: "2026-01-09T09:37:41.717688Z",
+      alert_type: "Heart Rate Spike",
+      message:
+        "Heart rate elevated to 92 BPM following fall detection. Patient may be in distress.",
+      severity: "High",
+    },
+    {
+      id: 3,
+      time: "2026-01-07T10:35:41.644575Z",
+      alert_type: "SpO2 Warning",
+      message:
+        "SpO2 dropped to 91% during sleep. Possible respiratory distress. Continue monitoring.",
+      severity: "Medium",
+    },
+  ],
+  risk_assessments: [
+    {
+      time: "2026-01-20T07:12:00.000000Z",
+      risk_level: "Moderate",
+      predicted_condition:
+        "Predicted orthostatic hypotension | Composite physiologic risk score: 42.7/100",
+      recommendation:
+        "Clinical monitoring recommended during early-morning postural transitions. No immediate intervention required.",
+    },
+    {
+      time: "2026-01-20T07:12:00.000000Z",
+      risk_level: "Moderate",
+      predicted_condition:
+        "Short-term blood pressure instability (30–45 min window) | Score: 39/100",
+      recommendation:
+        "Observe trends and recurrence patterns. Review timing and cumulative effects of rate-limiting therapy if episodes persist.",
+    },
+    {
+      time: "2026-01-20T07:12:00.000000Z",
+      risk_level: "Low",
+      predicted_condition:
+        "Fall risk secondary to hemodynamic instability | Score: 18/100",
+      recommendation:
+        "No escalation required. No fall, gait abnormality, or activity anomaly detected.",
+    },
+    {
+      time: "2026-01-20T07:12:00.000000Z",
+      risk_level: "Low",
+      predicted_condition:
+        "Acute cardiac or hypoxic event risk | Score: 12/100",
+      recommendation:
+        "No arrhythmic, ischemic, or hypoxic patterns identified. Routine monitoring only.",
+    },
+  ],
+};
+
+const mockRecommendation = {
+  timestamp: "2026-01-20T07:12:45.000000Z",
+  user_id: 1,
+  health_metrics: {
+    heart_rate: 58,
+    blood_pressure: {
+      systolic: 118,
+      diastolic: 72,
+    },
+    spo2: 96,
+  },
+  environment_metrics: {
+    location: "Bedroom",
+    activity_context: "Morning postural transition",
+  },
+  general_recommendations: [
+    "Take extra time when changing positions in the morning.",
+    "Remain seated briefly before standing fully after waking.",
+    "Continue routine monitoring of blood pressure trends.",
+    "Observe for recurring morning patterns related to posture or timing of medications.",
+  ],
+  alert_level_value: 2,
+};
 
 export default function Ovreview() {
   const { user } = useUser();
@@ -23,6 +174,7 @@ export default function Ovreview() {
 
   const { data: recommendationData } = useRecommendation(userId);
   const { data: summaryData } = useSummary(userId);
+  const { data: overViewData } = useGetOVerview(userId);
 
   const [activeTab, setActiveTab] = useState<TabType>("overview");
   const [summaryTab, setSummaryTab] = useState<SectionType>("kpis");
@@ -85,6 +237,7 @@ export default function Ovreview() {
         <SummarySection
           key="overview"
           data={summaryData}
+          liveData={overViewData}
           activeSection={summaryTab}
           onSectionChange={setSummaryTab}
         />
@@ -92,14 +245,14 @@ export default function Ovreview() {
     }
 
     if (activeTab === "recommendation") {
-      if (!recommendationData) return null;
+      if (!mockRecommendation) return null;
       return (
         <RecommendSection
           key="recommendation"
           data={{
-            ...recommendationData,
+            ...mockRecommendation,
             alert_level_value:
-              (recommendationData as any).alert_level_value ?? "0"
+              (mockRecommendation as any).alert_level_value ?? "0",
           }}
           activeSection={summaryTab}
           onSectionChange={setSummaryTab}
@@ -107,11 +260,11 @@ export default function Ovreview() {
       );
     }
 
-    if (activeTab === "risk" && summaryData) {
+    if (activeTab === "risk" && mockRisk) {
       return (
         <SummarySection
           key="risk"
-          data={summaryData}
+          data={mockRisk}
           activeSection={summaryTab}
           onSectionChange={setSummaryTab}
         />
@@ -128,9 +281,7 @@ export default function Ovreview() {
         onValueChange={(val) => handleTabChange(val as TabType)}
         className="w-full h-full space-y-4"
       >
-        <TabsList
-          className="w-full overflow-x-auto sm:overflow-visible flex sm:grid sm:grid-cols-3 gap-2 sm:gap-0 bg-gray-100 dark:bg-zinc-700 p-1 rounded-xl transition-colors duration-300 border-none"
-        >
+        <TabsList className="w-full overflow-x-auto sm:overflow-visible flex sm:grid sm:grid-cols-3 gap-2 sm:gap-0 bg-gray-100 dark:bg-zinc-700 p-1 rounded-xl transition-colors duration-300 border-none">
           {(["overview", "recommendation", "risk"] as TabType[]).map((tab) => {
             let label = "";
             if (tab === "overview") label = "Daily Overview";

@@ -38,8 +38,10 @@ import {
   IconSearch,
   IconLock,
   IconChartLine,
-  IconChartBar
-} from '@tabler/icons-react';
+  IconChartBar,
+  IconCamera,
+  IconCalendar,
+} from "@tabler/icons-react";
 
 export type Icon = React.ComponentType<IconProps>;
 
@@ -85,4 +87,6 @@ export const Icons: Record<string, Icon> = {
   search: IconSearch,
   lock: IconLock,
   sliders: IconSettings,
+  camera: IconCamera,
+  appointment: IconCalendar,
 };

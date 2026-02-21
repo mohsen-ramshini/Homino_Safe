@@ -1,6 +1,6 @@
-// components/HistoryChart.tsx
 "use client";
 
+import { useEffect } from "react";
 import {
   Chart as ChartJS,
   LineElement,
@@ -14,7 +14,6 @@ import {
 } from "chart.js";
 import { Line } from "react-chartjs-2";
 import "chartjs-adapter-date-fns";
-import { useEffect } from "react";
 
 ChartJS.register(
   LineElement,
@@ -26,75 +25,80 @@ ChartJS.register(
   TimeScale
 );
 
+/* ================= TYPES ================= */
+
+export type Metric =
+  | "heart_rate"
+  | "spo2"
+  | "bp_systolic"
+  | "bp_diastolic"
+  | "temperature"
+  | "body_temperature"
+  | "humidity"
+  | "mq2";
+
+export type TimePeriod = "day" | "week" | "month";
+
 type HistoryDataPoint = {
   timestamp: string;
-  [metric: string]: number | string;
+  value: number;
 };
 
 type HistoryChartProps = {
   data: HistoryDataPoint[];
-  metric: string;
+  metric: Metric;
+  timePeriod: TimePeriod;
   unit?: string;
   className?: string;
+  setMetric: (metric: Metric) => void;
+  setTimePeriod: (period: TimePeriod) => void;
 };
 
-export function HistoryChart({ data, metric, unit, className = "" }: HistoryChartProps) {
-  // Debug: log the received data and check structure
+/* ================= CONSTANTS ================= */
+
+const METRIC_OPTIONS: { label: string; value: Metric }[] = [
+  { label: "Heart Rate", value: "heart_rate" },
+  { label: "SpO₂", value: "spo2" },
+  { label: "BP Systolic", value: "bp_systolic" },
+  { label: "BP Diastolic", value: "bp_diastolic" },
+  { label: "Temperature", value: "temperature" },
+  { label: "Body Temperature", value: "body_temperature" },
+  { label: "Humidity", value: "humidity" },
+  { label: "MQ2", value: "mq2" },
+];
+
+const TIME_OPTIONS: { label: string; value: TimePeriod }[] = [
+  { label: "Last Day", value: "day" },
+  { label: "Last Week", value: "week" },
+  { label: "Last Month", value: "month" },
+];
+
+/* ================= COMPONENT ================= */
+
+export function HistoryChart({
+  data,
+  metric,
+  timePeriod,
+  unit,
+  className = "",
+  setMetric,
+  setTimePeriod,
+}: HistoryChartProps) {
   useEffect(() => {
-    console.log("HistoryChart data prop:", data);
-    if (!Array.isArray(data)) {
-      console.error("HistoryChart: data is not an array", data);
-    } else if (data.length > 0) {
-      console.log("First data point:", data[0]);
-    }
+    console.log("HistoryChart data:", data);
   }, [data]);
 
-  // Flexible: support both {timestamp, value} and {timestamp, [metric]: number}
+  // فیلتر داده‌ها
   const filteredData = Array.isArray(data)
-    ? data.filter(
-        (d) =>
-          typeof d.timestamp === "string" &&
-          (
-            (d[metric] !== undefined && typeof d[metric] === "number") ||
-            (d.value !== undefined && typeof d.value === "number")
-          )
-      )
+    ? data.filter((d) => d.timestamp && d.value != null && !isNaN(d.value))
     : [];
 
-  // Pick the correct value for charting
-  const getValue = (d: any) =>
-    typeof d[metric] === "number"
-      ? d[metric]
-      : typeof d.value === "number"
-      ? d.value
-      : undefined;
-
-  // Debug: log filtered data
-  useEffect(() => {
-    console.log("Filtered data for chart:", filteredData);
-  }, [filteredData]);
-
-  interface ChartDataSet {
-    label: string;
-    data: number[];
-    borderColor: string;
-    backgroundColor: string;
-    tension: number;
-    fill: boolean;
-    pointRadius: number;
-  }
-
-  interface ChartData {
-    labels: string[];
-    datasets: ChartDataSet[];
-  }
-
-  const chartData: ChartData = {
-    labels: filteredData.map((d) => d.timestamp),
+  const chartData = {
+    labels: filteredData.map((d) => new Date(d.timestamp)),
     datasets: [
       {
         label: `${metric.replace("_", " ")}${unit ? ` (${unit})` : ""}`,
-        data: filteredData.map(getValue) as number[],
+        data: filteredData.map((d) => d.value),
         borderColor: "#6366F1",
         backgroundColor: "rgba(99,102,241,0.1)",
         tension: 0.3,
@@ -110,43 +114,43 @@ export function HistoryChart({ data, metric, unit, className = "" }: HistoryChar
       legend: { display: true },
       tooltip: {
         callbacks: {
-          label: (context) =>
-            `${context.parsed.y} ${unit ?? ""}`,
+          label: (ctx) => `${ctx.parsed.y} ${unit ?? ""}`,
         },
       },
     },
     scales: {
       x: {
-        type: "time" as const,
+        type: "time",
         time: {
-          unit: "day" as const,
+          unit:
+            timePeriod === "day"
+              ? "hour"
+              : timePeriod === "week"
+              ? "day"
+              : "week",
           tooltipFormat: "yyyy/MM/dd HH:mm",
         },
-        title: {
-          display: true,
-          text: "Time",
-        },
+        title: { display: true, text: "Time" },
       },
       y: {
         beginAtZero: true,
-        title: {
-          display: true,
-          text: unit ?? "",
-        },
+        title: { display: true, text: unit ?? "" },
       },
     },
   };
 
   return (
-    <div className={`rounded-xl p-4 transition-colors duration-300 bg-white dark:bg-zinc-800 ${className}`}>
-      <h2 className="text-lg font-semibold mb-4 capitalize">
-        {metric.replace("_", " ")} over time
-      </h2>
-      {filteredData.length === 0 ? (
-        <p className="text-gray-500 text-sm">No data available.</p>
-      ) : (
-        <Line data={chartData} options={chartOptions} />
-      )}
+    <div className={`flex flex-col rounded-xl dark:bg-zinc-800 ${className}`}>
+      {/* ===== Chart یا پیام "No data" ===== */}
+      <div className="flex-1 overflow-auto p-4">
+        {filteredData.length === 0 ? (
+          <p className="text-sm text-gray-500 text-center">
+            No data available for this metric.
+          </p>
+        ) : (
+          <Line data={chartData} options={chartOptions} />
+        )}
+      </div>
     </div>
   );
-};
+}

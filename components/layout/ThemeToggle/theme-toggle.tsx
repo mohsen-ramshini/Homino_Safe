@@ -1,17 +1,15 @@
-'use client';
+"use client";
 
-import { IconBrightness } from '@tabler/icons-react';
-import { useTheme } from 'next-themes';
-import * as React from 'react';
-
-import { Button } from '@/components/ui/button';
+import { SunMoon } from "lucide-react";
+import { useTheme } from "next-themes";
+import * as React from "react";
 
 export function ModeToggle() {
   const { setTheme, resolvedTheme } = useTheme();
 
   const handleThemeToggle = React.useCallback(
     (e?: React.MouseEvent) => {
-      const newMode = resolvedTheme === 'dark' ? 'light' : 'dark';
+      const newMode = resolvedTheme === "dark" ? "light" : "dark";
       const root = document.documentElement;
 
       if (!document.startViewTransition) {
@@ -21,8 +19,8 @@ export function ModeToggle() {
 
       // Set coordinates from the click event
       if (e) {
-        root.style.setProperty('--x', `${e.clientX}px`);
-        root.style.setProperty('--y', `${e.clientY}px`);
+        root.style.setProperty("--x", `${e.clientX}px`);
+        root.style.setProperty("--y", `${e.clientY}px`);
       }
 
       document.startViewTransition(() => {
@@ -33,14 +31,12 @@ export function ModeToggle() {
   );
 
   return (
-    <Button
-      variant='secondary'
-      size='icon'
-      className='group/toggle size-8'
+    <button
+      className="group/toggle w-12 h-12 flex items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors cursor-pointer"
       onClick={handleThemeToggle}
     >
-      <IconBrightness />
-      <span className='sr-only'>Toggle theme</span>
-    </Button>
+      <SunMoon size={28} /> {/* اندازه آیکن */}
+      <span className="sr-only">Toggle theme</span>
+    </button>
   );
 }

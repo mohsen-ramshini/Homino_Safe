@@ -12,61 +12,39 @@ interface NotificationContextType {
 // Sample initial alerts for smart senior sensors
 const sampleAlerts: AlertData[] = [
   {
-    id: 'alert-001',
-    timestamp: '2025-06-11T10:15:00Z',
-    alert_type: 'no_activity' as BehaviorAlertType,
-    severity: 'HIGH',
-    message: 'No activity detected for 3 hours in the living room',
-    location: 'Living Room',
-    related_sensors: ['motion', 'presence'] as SmartSensorType[],
-    details: {
-      duration: 3 * 60 * 60, // 3 hours in seconds
-      confidence: 0.95,
-      sensor_readings: [
-        {
-          sensor_id: 'motion-livingroom',
-          sensor_type: 'motion',
-          value: 0,
-          timestamp: '2025-06-11T10:15:00Z',
-        },
-      ],
-    },
-    sensor_icon: undefined,
-    read: false,
-    sensor: undefined
-  },
-  {
-    id: 'alert-002',
-    timestamp: '2025-06-11T22:30:00Z',
-    alert_type: 'night_activity' as BehaviorAlertType,
+    id: 'alert-ortho-001',
+    timestamp: '2026-01-20T07:12:30Z',
+    alert_type: 'predicted_orthostatic_hypotension' as BehaviorAlertType,
     severity: 'MEDIUM',
-    message: 'Unusual night activity detected in the bedroom',
+    message:
+      'Predicted blood pressure instability following morning postural change',
     location: 'Bedroom',
-    related_sensors: ['motion', 'bed'] as SmartSensorType[],
+    related_sensors: ['bp', 'heart_rate', 'activity'] as SmartSensorType[],
     details: {
-      duration: 30 * 60, // 30 minutes
-      confidence: 0.88,
-    },
-    sensor_icon: undefined,
-    read: false,
-    sensor: undefined
-  },
-  {
-    id: 'alert-003',
-    timestamp: '2025-06-11T08:00:00Z',
-    alert_type: 'possible_fall' as BehaviorAlertType,
-    severity: 'HIGH',
-    message: 'Possible fall detected in the hallway',
-    location: 'Hallway',
-    related_sensors: ['fall_detector'] as SmartSensorType[],
-    details: {
-      confidence: 0.92,
+      duration: 45 * 60, // predicted risk window: 45 minutes
+      confidence: 0.91,
       sensor_readings: [
         {
-          sensor_id: 'fall-hallway-01',
-          sensor_type: 'fall_detector',
-          value: true,
-          timestamp: '2025-06-11T08:00:00Z',
+          sensor_id: 'bp-wrist-01',
+          sensor_type: 'bp',
+          value: {
+            systolic: 118,
+            diastolic: 72,
+            predicted_systolic_min: 98
+          },
+          timestamp: '2026-01-20T07:12:00Z',
+        },
+        {
+          sensor_id: 'hr-wrist-01',
+          sensor_type: 'heart_rate',
+          value: 58,
+          timestamp: '2026-01-20T07:12:00Z',
+        },
+        {
+          sensor_id: 'activity-wrist-01',
+          sensor_type: 'activity',
+          value: 'Supine → Standing',
+          timestamp: '2026-01-20T07:12:00Z',
         },
       ],
     },
@@ -75,6 +53,7 @@ const sampleAlerts: AlertData[] = [
     sensor: undefined
   },
 ];
+
 
 const NotificationContext = createContext<NotificationContextType | undefined>(undefined);
 

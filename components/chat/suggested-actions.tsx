@@ -1,15 +1,18 @@
-'use client';
+"use client";
 
-import { motion } from 'framer-motion';
-import { Button } from '../ui/button';
-import { memo } from 'react';
-import type { UseChatHelpers } from '@ai-sdk/react';
-import type { VisibilityType } from './visibility-selector';
-import type { ChatMessage } from '@/lib/types';
+import { motion } from "framer-motion";
+import { Button } from "../ui/button";
+import { memo } from "react";
+import type { UseChatHelpers } from "@ai-sdk/react";
+import type { VisibilityType } from "./visibility-selector";
+import type { ChatMessage } from "@/lib/types";
 
 interface SuggestedActionsProps {
   chatId: string;
-  sendMessage: (message: { role: string; parts: { type: string; text: string }[] }) => void | Promise<void>;
+  sendMessage: (message: {
+    role: string;
+    parts: { type: string; text: string }[];
+  }) => void | Promise<void>;
   selectedVisibilityType: VisibilityType;
 }
 
@@ -18,31 +21,32 @@ function PureSuggestedActions({
   sendMessage,
   selectedVisibilityType,
 }: SuggestedActionsProps) {
-const suggestedActions = [
-  {
-    title: 'How is',
-    label: 'my overall health?',
-    action: 'How is my overall health?',
-  },
-  {
-    title: 'What is',
-    label: 'my current heart rate?',
-    action: 'What is my current heart rate?',
-  },
-  {
-    title: 'How is',
-    label: 'my blood pressure?',
-    action: 'How is my blood pressure?',
-  },
-  {
-    title: 'How has',
-    label: 'my health been in the past week?',
-    action: 'How has my health been in the past week?',
-  },
-];
-
-
-
+  const suggestedActions = [
+    {
+      title: "Are there any interactions",
+      label: "between my current medications?",
+      action:
+        "Considering the medications listed in my medical record, are there any dangerous interactions between them that I should be aware of?",
+    },
+    {
+      title: "What warning signs",
+      label: "should I watch out for?",
+      action:
+        "Given my current heart condition and blood pressure status, what specific warning signs should I watch out for that are relevant to my condition?",
+    },
+    {
+      title: "Are my medication dosages",
+      label: "still appropriate?",
+      action:
+        "Are my current medication dosages still appropriate given my recent weight or blood pressure changes, or do they need review?",
+    },
+    {
+      title: "Is my weight and BMI",
+      label: "within a healthy range?",
+      action:
+        "Is my current weight and Body Mass Index (BMI) within a healthy range considering my underlying medical conditions?",
+    },
+  ];
 
   return (
     <div
@@ -56,17 +60,21 @@ const suggestedActions = [
           exit={{ opacity: 0, y: 20 }}
           transition={{ delay: 0.05 * index }}
           key={`suggested-action-${suggestedAction.title}-${index}`}
-          className={index > 1 ? 'hidden sm:block' : 'block'}
+          className={index > 1 ? "hidden sm:block" : "block"}
         >
           <Button
-             type='button'
+            type="button"
             variant="ghost"
             onClick={async () => {
-              window.history.replaceState({}, '', `/dashboard/ai/chat/${chatId}`);
+              window.history.replaceState(
+                {},
+                "",
+                `/dashboard/ai/chat/${chatId}`
+              );
 
               sendMessage({
-                role: 'user',
-                parts: [{ type: 'text', text: suggestedAction.action }],
+                role: "user",
+                parts: [{ type: "text", text: suggestedAction.action }],
               });
             }}
             className="text-left border rounded-xl px-4 py-3.5 text-sm flex-1 gap-1 sm:flex-col w-full h-auto justify-start items-start"
@@ -90,5 +98,5 @@ export const SuggestedActions = memo(
       return false;
 
     return true;
-  },
+  }
 );

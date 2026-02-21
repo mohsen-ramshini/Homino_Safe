@@ -20,7 +20,7 @@ export interface AIModelOutput {
 export interface AlertType {
   alertId: string;
   userId: string;
-  alertType: 'BP_DROP' | 'HR_SPIKE' | 'FALL_DETECTED' | 'OXYGEN_LOW' | 'TEMP_HIGH' | 'OTHER';
+  alertType: 'BP_DROP' | 'HR_SPIKE' | 'FALL_DETECTED' | 'OXYGEN_LOW' | 'TEMP_HIGH' | 'OTHER' | "PREDICTED_ORTHOSTATIC_HYPOTENSION";
   severity: 'low' | 'medium' | 'high' | 'critical';
   timestamp: string;
   predictedAt?: string;

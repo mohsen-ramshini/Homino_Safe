@@ -13,7 +13,15 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 
 // OTP Toast Component با دکمه بستن
-function OtpToast({ code, duration, toastId }: { code: string; duration: number; toastId: string }) {
+function OtpToast({
+  code,
+  duration,
+  toastId,
+}: {
+  code: string;
+  duration: number;
+  toastId: string;
+}) {
   const [seconds, setSeconds] = useState(duration);
 
   useEffect(() => {
@@ -35,7 +43,9 @@ function OtpToast({ code, duration, toastId }: { code: string; duration: number;
       <div className="flex items-center justify-between">
         <div>
           <p className="text-sm text-muted-foreground">One-Time Password</p>
-          <p className="text-2xl font-bold tracking-widest text-green-600">{code}</p>
+          <p className="text-2xl font-bold tracking-widest text-green-600">
+            {code}
+          </p>
         </div>
         <div className="flex items-center gap-2">
           <div className="flex items-center gap-1 text-sm text-muted-foreground">
@@ -74,13 +84,19 @@ export default function ProfileCard() {
         setOtpActive(true);
 
         // نمایش OTP در toast با دکمه بستن
-        const toastId = toast.custom((t) => (
-          <OtpToast code={data.code} duration={data.expires_in_seconds} toastId={(t as any).id} />
-        ), {
-          duration: Infinity,
-          position: "top-right",
-        });
-
+        const toastId = toast.custom(
+          (t) => (
+            <OtpToast
+              code={data.code}
+              duration={data.expires_in_seconds}
+              toastId={(t as any).id}
+            />
+          ),
+          {
+            duration: Infinity,
+            position: "top-right",
+          }
+        );
 
         // فعال شدن دوباره دکمه پس از پایان مدت زمان
         setTimeout(() => {
@@ -94,7 +110,7 @@ export default function ProfileCard() {
   };
 
   return (
-    <Card className="bg-white dark:bg-zinc-800 rounded-xl p-5 shadow-md">
+    <div className="bg-white dark:bg-zinc-800 rounded-xl p-5">
       {/* Header */}
       <div className="flex flex-col sm:flex-row items-center sm:items-start gap-5 w-full">
         <div className="relative flex flex-col items-center">
@@ -123,21 +139,9 @@ export default function ProfileCard() {
           <CardTitle className="text-xl sm:text-2xl font-bold">
             {user.first_name} {user.last_name}
           </CardTitle>
-          <div className="mt-2 flex justify-center sm:justify-start">
-            <Button
-              onClick={handleConnectDevice}
-              disabled={isDeviceLoading || otpActive}
-              size="sm"
-              className="bg-green-500 hover:bg-green-600 text-white rounded-lg px-3 py-2 flex items-center gap-2 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {isDeviceLoading ? (
-                <LoaderIcon className="w-4 h-4 animate-spin" />
-              ) : (
-                <Watch className="w-4 h-4" />
-              )}
-              <span>{isDeviceLoading ? "Connecting..." : "Connect Device"}</span>
-            </Button>
-          </div>
+          <CardTitle className="text-md sm:text-md font-semibold">
+            gender : {user.gender}
+          </CardTitle>
         </div>
       </div>
 
@@ -173,7 +177,22 @@ export default function ProfileCard() {
             </div>
           </div>
         </div>
+        <div className="mt-4 flex justify-center items-cente">
+          <Button
+            onClick={handleConnectDevice}
+            disabled={isDeviceLoading || otpActive}
+            size="sm"
+            className="bg-green-500 hover:bg-green-600 text-white rounded-lg px-3 py-2 flex items-center gap-2 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {isDeviceLoading ? (
+              <LoaderIcon className="w-4 h-4 animate-spin" />
+            ) : (
+              <Watch className="w-4 h-4" />
+            )}
+            <span>{isDeviceLoading ? "Connecting..." : "Connect Device"}</span>
+          </Button>
+        </div>
       </CardContent>
-    </Card>
+    </div>
   );
 }

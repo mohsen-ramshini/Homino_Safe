@@ -12,6 +12,5 @@ export default function PatientPage() {
     redirect('/auth/sign-in');
   }
 
-  // return <PatientDashboard />;
   return <Dashboard />;
 }

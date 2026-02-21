@@ -1,56 +1,33 @@
-import { AlertType } from './AlertSchema';
+import { AlertType } from "./AlertSchema";
 
 export const sampleAlerts: AlertType[] = [
   {
-    alertId: 'alert-001',
-    userId: 'user-123',
-    alertType: 'BP_DROP',
-    severity: 'high',
-    timestamp: '2025-07-07T13:45:00Z',
-    predictedAt: '2025-07-07T13:30:00Z',
+    alertId: "alert-ortho-001",
+    userId: "user-maria-001",
+    alertType: "PREDICTED_ORTHOSTATIC_HYPOTENSION",
+    severity: "medium",
+    timestamp: "2026-01-20T07:12:30Z",
+    predictedAt: "2026-01-20T07:12:00Z",
     sensorData: {
-      bp: { systolic: 139, diastolic: 86 },
-      heartRate: 65,
-      spo2: 99,
-      temperature: 36.2,
-      activity: 'Standing',
+      bp: { systolic: 118, diastolic: 72 },
+      heartRate: 58,
+      spo2: 96,
+      temperature: null,
+      activity: "Postural transition (Supine → Standing)",
       fallDetected: false,
     },
     aiModelOutput: {
-      explanation: 'Severe drop in blood pressure compared to normal values',
+      explanation:
+        "Predicted systolic blood pressure decline following postural change with insufficient heart rate compensation.",
       shapValues: {
-        bp_systolic: -0.45,
-        bp_diastolic: -0.35,
-        activity: 0.1,
+        beta_blocker_effect: -0.42,
+        diabetic_autonomic_impairment: -0.31,
+        hfpEF_preload_sensitivity: -0.18,
+        posture_change: 0.22,
       },
     },
     isAcknowledged: false,
-    notes: '',
-  },
-  {
-    alertId: 'alert-002',
-    userId: 'user-123',
-    alertType: 'FALL_DETECTED',
-    severity: 'critical',
-    timestamp: '2025-07-07T15:05:00Z',
-    sensorData: {
-      bp: { systolic: 120, diastolic: 80 },
-      heartRate: 95,
-      spo2: 98,
-      temperature: 37,
-      activity: 'Fall',
-      fallDetected: true,
-    },
-    aiModelOutput: {
-      explanation: 'High probability fall detected by CNN-BiLSTM model',
-      shapValues: {
-        activity: 0.75,
-        fallDetected: 0.9,
-      },
-    },
-    isAcknowledged: true,
-    acknowledgedBy: 'caregiver-45',
-    acknowledgedAt: '2025-07-07T15:10:00Z',
-    notes: 'Caregiver is in contact with the patient.',
+    notes:
+      "Moderate risk identified. No symptoms, arrhythmia, hypoxia, or fall detected. Monitoring trajectory.",
   },
 ];
